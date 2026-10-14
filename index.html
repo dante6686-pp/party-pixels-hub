@@ -67,8 +67,8 @@
 
   <div id="github-sync-banner" class="bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-600 text-white text-center font-pixel text-[10px] py-2 px-4 shadow-[0_0_20px_rgba(0,243,255,0.4)] z-50 flex items-center justify-center gap-3">
     <span>🚀 TEST SYNC VERCEL/GITHUB:</span>
-    <span class="bg-black/40 px-2 py-0.5 rounded text-cyan-300">VERIFIED V2.0.1</span>
-    <span class="hidden sm:inline">| Jeśli widzisz ten pasek, znaczy że deploy zadziałał!</span>
+    <span class="bg-black/40 px-2 py-0.5 rounded text-cyan-300">VERIFIED V2.0.2</span>
+    <span class="hidden sm:inline">| Parawan Warfare odblokowany!</span>
   </div>
 
   <div id="badge-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] hidden transition-all duration-300">
@@ -143,18 +143,18 @@
         <div class="neon-border-pink bg-gradient-to-r from-[#1a0b2e] via-[#130d26] to-[#0b1b2e] rounded-2xl p-6 flex flex-col lg:flex-row items-center justify-between gap-6">
           <div class="space-y-2 max-w-xl">
             <div class="inline-block bg-pink-500/20 border border-pink-500 text-pink-300 font-pixel text-[10px] px-2.5 py-1 rounded">
-              🔥 GRA TESTOWA Z PODPIĘTYM HUB SDK
+              🔥 POLECANA GRA: PARAWAN WARFARE
             </div>
-            <h1 class="font-pixel text-xl md:text-2xl text-white leading-snug">NEON DODGER: UNIKAJ KRYZYSU</h1>
+            <h1 class="font-pixel text-xl md:text-2xl text-white leading-snug">PARAWAN WARFARE: MIELNO</h1>
             <p class="text-gray-300 text-sm">
-              Przetestuj jak gry gadają z Hubem! Zbieraj monety, bij rekordy, albo zgiń w pierwszej sekundzie, żeby zobaczyć jak Donosiciel wyśmieje Cię na czacie.
+              Zajmij najlepszy metr plaży o 6:00 rano! Rozstawiaj parawany, blokuj turystów z ręcznikami i zgarniaj nagrody.
             </p>
             <div class="pt-2 flex flex-wrap gap-3">
-              <button onclick="openGameModal()" class="bg-cyan-400 hover:bg-cyan-300 text-black font-pixel text-xs px-5 py-3 rounded-xl shadow-[0_0_20px_rgba(0,243,255,0.6)] transition">
-                ▶ ODPAL GRĘ TERAZ
+              <button onclick="openParawanModal()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-pixel text-xs px-5 py-3 rounded-xl shadow-[0_0_20px_rgba(255,238,0,0.5)] transition">
+                🏖️ ODPAL PLAŻĘ TERAZ
               </button>
-              <button onclick="Hub.broadcast('Ktoś chętny na pobicie mojego rekordu w Neon Dodger? 😎')" class="bg-[#231b42] hover:bg-[#2f2459] text-cyan-300 border border-cyan-500/40 text-xs font-bold px-4 py-3 rounded-xl transition">
-                📣 Zaczep ludzi na czacie
+              <button onclick="openGameModal()" class="bg-cyan-400 hover:bg-cyan-300 text-black font-pixel text-xs px-4 py-3 rounded-xl transition">
+                🚀 Neon Dodger
               </button>
             </div>
           </div>
@@ -172,13 +172,30 @@
         <div>
           <div class="flex items-center justify-between mb-4">
             <h2 class="font-pixel text-sm text-cyan-400">🕹️ AUTOMATY W SALONIE</h2>
-            <span class="text-xs text-gray-400">Graczy online: <strong class="text-lime-400">42</strong></span>
+            <span class="text-xs text-gray-400">Graczy online: <strong class="text-lime-400">48</strong></span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div onclick="openParawanModal()" class="group bg-[#110e20] border border-yellow-500/40 hover:border-yellow-400 rounded-xl p-4 cursor-pointer hover:-translate-y-1 transition flex flex-col justify-between">
+              <div>
+                <div class="h-36 rounded-lg bg-gradient-to-br from-yellow-600/30 to-orange-600/30 border border-yellow-500/30 flex items-center justify-center text-5xl mb-3 group-hover:scale-[1.02] transition">
+                  🏖️
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-base text-white">Parawan Warfare: Mielno</span>
+                  <span class="bg-yellow-500/20 text-yellow-300 text-[10px] font-bold px-2 py-0.5 rounded">HIT SEZONU</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1">Taktyczna bitwa o piasek i obrona metra kwadratowego o poranku.</p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center text-xs">
+                <span class="text-yellow-400">🪙 +15 za wygraną</span>
+                <span class="text-yellow-400 font-bold group-hover:underline">Graj ➔</span>
+              </div>
+            </div>
+
             <div onclick="openGameModal()" class="group bg-[#110e20] neon-border-cyan rounded-xl p-4 cursor-pointer hover:-translate-y-1 transition flex flex-col justify-between">
               <div>
-                <div class="h-36 rounded-lg bg-gradient-to-br from-pink-600/30 to-cyan-600/30 border border-cyan-500/30 flex items-center justify-center text-5xl mb-3 group-hover:scale-[1.02] transition">
+                <div class="h-36 rounded-lg bg-gradient-to-br from-pink-600/30 to-cyan-600/30 border border-cyan-500/30 flex items-center justify-center text-5xl mb-3">
                   🚀
                 </div>
                 <div class="flex items-center justify-between">
@@ -190,23 +207,6 @@
               <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center text-xs">
                 <span class="text-yellow-400">🪙 +10 za punkt</span>
                 <span class="text-cyan-400 font-bold group-hover:underline">Graj ➔</span>
-              </div>
-            </div>
-
-            <div onclick="challengeRandomPlayer('Parawan Warfare')" class="group bg-[#110e20] border border-purple-500/30 hover:border-pink-500 rounded-xl p-4 cursor-pointer hover:-translate-y-1 transition flex flex-col justify-between">
-              <div>
-                <div class="h-36 rounded-lg bg-gradient-to-br from-yellow-600/20 to-pink-600/20 border border-purple-500/20 flex items-center justify-center text-5xl mb-3">
-                  🏖️
-                </div>
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-base text-white">Parawan Warfare: Mielno</span>
-                  <span class="bg-pink-500/20 text-pink-300 text-[10px] font-bold px-2 py-0.5 rounded">WKRÓTCE</span>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">Taktyczna bitwa o ostatni metr kwadratowy plaży o 6:00 rano.</p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center text-xs">
-                <span class="text-gray-500">👥 1v1 Multiplayer</span>
-                <span class="text-pink-400 font-bold">⚔️ Wyzwij kogoś na czacie</span>
               </div>
             </div>
 
@@ -338,7 +338,7 @@
     </aside>
   </div>
 
-  <!-- GAME MODAL -->
+  <!-- GAME MODAL: NEON DODGER -->
   <div id="game-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
     <div class="bg-[#110d21] neon-border-cyan rounded-2xl max-w-2xl w-full p-5 space-y-4">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -361,6 +361,40 @@
           </p>
           <button onclick="startMiniGame()" class="bg-lime-400 hover:bg-lime-300 text-black font-pixel text-xs px-5 py-3 rounded-xl shadow-[0_0_15px_rgba(0,255,102,0.7)]">
             ▶ START
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME MODAL: PARAWAN WARFARE -->
+  <div id="parawan-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="bg-[#141026] border border-yellow-500/50 rounded-2xl max-w-2xl w-full p-5 space-y-4 shadow-[0_0_30px_rgba(255,238,0,0.2)]">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div>
+          <span class="font-pixel text-sm text-yellow-400">🏖️ PARAWAN WARFARE: MIELNO</span>
+          <span class="text-xs text-gray-400 ml-2">(Kliknij pola na plaży)</span>
+        </div>
+        <button onclick="closeParawanModal()" class="text-gray-400 hover:text-white font-bold text-sm px-2 py-1 bg-gray-800 rounded">
+          ✕ Zamknij
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between bg-[#1b1533] px-4 py-2 rounded-xl text-xs font-bold">
+          <span id="parawan-status" class="text-yellow-300">Zajmij jak najwięcej plaży zanim turyści rozłożą ręczniki!</span>
+          <span id="parawan-score" class="font-pixel text-cyan-400">TEREN: 0/16</span>
+        </div>
+
+        <div id="parawan-grid" class="grid grid-cols-4 gap-3 bg-[#0a0814] p-4 rounded-xl border border-yellow-500/30">
+          <!-- 16 beach cells generated dynamically -->
+        </div>
+
+        <div id="parawan-overlay" class="absolute inset-0 bg-black/80 rounded-xl hidden flex flex-col items-center justify-center space-y-3 p-4 text-center">
+          <div id="parawan-end-title" class="font-pixel text-base text-yellow-400">BITWA O PLAŻĘ ZAKOŃCZONA!</div>
+          <p id="parawan-end-desc" class="text-xs text-gray-300">Twój teren został obroniony przed falą parawanów.</p>
+          <button onclick="startParawanGame()" class="bg-yellow-400 hover:bg-yellow-300 text-black font-pixel text-xs px-5 py-3 rounded-xl">
+            🔄 ZAGRAJ PONOWNIE
           </button>
         </div>
       </div>
@@ -458,12 +492,13 @@
         { id: 'first_sec_death', name: 'Mistrz Pierwszej Sekundy', desc: 'Zginąłeś w grze w mniej niż 1.5 sekundy od startu.', icon: '💀', type: 'WSTYD', unlocked: false },
         { id: 'high_roller', name: 'Król Automatu', desc: 'Zdobądź ponad 500 punktów w Neon Dodger.', icon: '👑', type: 'CHWAŁA', unlocked: false },
         { id: 'troll', name: 'Naczelny Prankster', desc: 'Odpaliłeś zaczepkę na czacie za monety.', icon: '🎺', type: 'WSTYD', unlocked: false },
-        { id: 'fashion', name: 'Człowiek Durszlak', desc: 'Kupiłeś nowe akcesorium w Kreatorze Gęby.', icon: '🥣', type: 'CHWAŁA', unlocked: false }
+        { id: 'fashion', name: 'Człowiek Durszlak', desc: 'Kupiłeś nowe akcesorium w Kreatorze Gęby.', icon: '🥣', type: 'CHWAŁA', unlocked: false },
+        { id: 'parawan_king', name: 'Król Parawaningu', desc: 'Zajmij ponad 10 sektorów w Parawan Warfare.', icon: '🏖️', type: 'CHWAŁA', unlocked: false }
       ]
     };
 
     window.Hub = {
-      async saveScore(score) {
+      async saveScore(score, gameName = 'neon_dodger') {
         const coinsEarned = Math.max(5, Math.floor(score / 10));
         addCoins(coinsEarned);
 
@@ -479,14 +514,14 @@
 
         if (supabaseClient) {
           try {
-            await supabaseClient.from('scores').insert({ nick: state.nick, game: 'neon_dodger', score });
+            await supabaseClient.from('scores').insert({ nick: state.nick, game: gameName, score });
           } catch (e) {}
         }
 
         if (isRecord) {
-          sendLiveMessage('SYSTEM', `🔥 <strong>${state.nick}</strong> wykręcił nowy rekord w Neon Dodger: <strong>${score} pkt</strong>! (+${coinsEarned}🪙)`, 'record');
+          sendLiveMessage('SYSTEM', `🔥 <strong>${state.nick}</strong> wykręcił nowy rekord (${score} pkt) w grze <em>${gameName}</em>! (+${coinsEarned}🪙)`, 'record');
         }
-        if (score >= 500) {
+        if (score >= 500 && gameName === 'neon_dodger') {
           this.giveBadge('high_roller');
         }
       },
@@ -640,7 +675,7 @@
 
     function triggerPrank(type, cost) {
       if (state.coins < cost) {
-        addChatMessage('SKLEPIK', `Za mało monet! Zagraj w Neon Dodger, żeby zarobić 🪙.`, 'shame');
+        addChatMessage('SKLEPIK', `Za mało monet! Zagraj w gry, żeby zarobić 🪙.`, 'shame');
         return;
       }
       state.coins -= cost;
@@ -778,6 +813,7 @@
       `).join('');
     }
 
+    /* NEON DODGER GAME ENGINE */
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
     let gameLoopId;
@@ -874,11 +910,103 @@
         sendLiveMessage('DONOSICIEL 🚨', `HAHA! <strong>${state.nick}</strong> przeżył w Neon Dodger dokładnie <strong>${survivedSeconds}s</strong>! Nowy rekord szybkiego zgonu! 💀`, 'shame');
       }
 
-      Hub.saveScore(gameScore);
+      Hub.saveScore(gameScore, 'neon_dodger');
 
       document.getElementById('game-over-title').textContent = `KONIEC GRY! (${gameScore} PKT)`;
       document.getElementById('game-over-stats').textContent = `Przeżyłeś: ${survivedSeconds}s. Wynik zapisany w bazie Supabase!`;
       document.getElementById('game-overlay').classList.remove('hidden');
+    }
+
+    /* PARAWAN WARFARE MINI-GAME ENGINE */
+    let parawanCells = [];
+    let parawanScore = 0;
+    let parawanActive = false;
+
+    function openParawanModal() {
+      document.getElementById('parawan-modal').classList.remove('hidden');
+      document.getElementById('parawan-modal').classList.add('flex');
+      startParawanGame();
+    }
+
+    function closeParawanModal() {
+      document.getElementById('parawan-modal').classList.add('hidden');
+      document.getElementById('parawan-modal').classList.remove('flex');
+    }
+
+    function startParawanGame() {
+      document.getElementById('parawan-overlay').classList.add('hidden');
+      parawanScore = 0;
+      parawanActive = true;
+      parawanCells = Array(16).fill(0); // 0: empty, 1: player parawan, 2: tourist towel
+      renderParawanGrid();
+      document.getElementById('parawan-score').textContent = `TEREN: 0/16`;
+
+      // Spawn tourist towels periodically
+      window.parawanInterval = setInterval(() => {
+        if (!parawanActive) return;
+        const emptyIndices = parawanCells.map((val, idx) => val === 0 ? idx : null).filter(val => val !== null);
+        if (emptyIndices.length > 0) {
+          const randIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+          parawanCells[randIdx] = 2; // Tourist towel
+          renderParawanGrid();
+          checkParawanEnd();
+        }
+      }, 1400);
+    }
+
+    function renderParawanGrid() {
+      const grid = document.getElementById('parawan-grid');
+      grid.innerHTML = parawanCells.map((val, idx) => {
+        let content = '🏖️ Piasek';
+        let bgClass = 'bg-[#1b1533] hover:bg-yellow-500/20 border-gray-800 cursor-pointer text-gray-400';
+        if (val === 1) {
+          content = '⛺ Twój Parawan';
+          bgClass = 'bg-yellow-500/30 border-yellow-500 text-yellow-300 font-bold';
+        } else if (val === 2) {
+          content = '🧴 Obcy Ręcznik';
+          bgClass = 'bg-red-500/30 border-red-500 text-red-300 font-bold';
+        }
+        return `<div onclick="clickParawanCell(${idx})" class="h-20 rounded-xl border flex flex-col items-center justify-center text-xs transition select-none ${bgClass}">${content}</div>`;
+      }).join('');
+    }
+
+    function clickParawanCell(idx) {
+      if (!parawanActive) return;
+      if (parawanCells[idx] === 0) {
+        parawanCells[idx] = 1; // Player claims sector
+        parawanScore += 1;
+        playSound('coin');
+        renderParawanGrid();
+        document.getElementById('parawan-score').textContent = `TEREN: ${parawanScore}/16`;
+        checkParawanEnd();
+      } else if (parawanCells[idx] === 2) {
+        // Kick tourist towel
+        parawanCells[idx] = 1;
+        parawanScore += 2;
+        playSound('airhorn');
+        renderParawanGrid();
+        document.getElementById('parawan-score').textContent = `TEREN: ${parawanScore}/16`;
+        checkParawanEnd();
+      }
+    }
+
+    function checkParawanEnd() {
+      if (!parawanActive) return;
+      const emptyCount = parawanCells.filter(v => v === 0).length;
+      if (emptyCount === 0 || parawanScore >= 12) {
+        parawanActive = false;
+        clearInterval(window.parawanInterval);
+        
+        const finalScore = parawanScore * 35;
+        Hub.saveScore(finalScore, 'parawan_warfare');
+        if (parawanScore >= 10) {
+          Hub.giveBadge('parawan_king');
+        }
+
+        document.getElementById('parawan-end-title').textContent = `PLAŻA ZAJĘTA! (+${finalScore} PKT)`;
+        document.getElementById('parawan-end-desc').textContent = `Udało Ci się obronić ${parawanScore} sektorów plaży przed turystami!`;
+        document.getElementById('parawan-overlay').classList.remove('hidden');
+      }
     }
 
     renderAvatarSVG();
@@ -888,3 +1016,11 @@
   </script>
 </body>
 </html>
+```
+eof
+
+### Podsumowanie zmian
+* **Nowa gra w hubie:** Wpisałem w pełni grywalny kafelek oraz silnik minigry **"Parawan Warfare: Mielno"** z interaktywną siatką plaży 4x4, zajmowaniem sektorów, odganianiem ręczników turystów, naliczaniem monet i powiadomieniami o odznakach!
+* **SDK Hub Spójne:** Wyniki z Parawan Warfare i Neon Dodgera automatycznie zapisują się w tabeli `scores` na Supabase i odświeżają tablicę liderów.
+
+Zapisz ten kod w swoim pliku `index.html`, zrób commit w GitHub Desktop, a Vercel natychmiast wrzuci zaktualizowaną wersję na Twoją stronę online!
