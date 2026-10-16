@@ -54,3 +54,12 @@ Patryk zaliczył wcześniejszy test telefonu („wszystko działa elegancko”).
 Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev. Prywatny zapis konta, kontrola auth.uid i oczekiwanego właściciela, CAS/revision, idempotencja, lokalna kolejka pending, wykrywanie konfliktu między urządzeniami, retry i bezpieczny import lokalnego slotu konta. Gość pozostaje lokalny. Brak nagród/rankingu na podstawie checkpointu.
 
 37 testów Node, test SQL z rollback i build przeszły. Testy dwóch instancji kontrolera oraz odczytu po drugim wywołaniu RPC potwierdzają przenośność zapisu; rzeczywisty telefon→PC po nowym wdrożeniu wymaga jeszcze potwierdzenia. Advisors: trzy INFO o celowym deny-by-default prywatnych tabel oraz WARN auth_leaked_password_protection (ustawienie Auth poza zakresem tej migracji; https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection ).
+
+## 2026-10-16 — Friends MVP
+- Patryk confirmed checkpoint synchronization works, then explicitly moved focus back to the hub.
+- Added signed-in Friends panel: nickname prefix search (3–20 chars, 20 results), incoming/outgoing invitations, accept/decline/cancel, mutual friends, removal with confirmation.
+- Private friendships table, RLS deny-by-default/no direct client grants; authenticated checked RPC with expected owner, confirmed/unbanned account, immutable pair and generation UUID. Only recipient accepts/declines and sender cancels. Pair/user advisory locks serialize transitions; no automatic acceptance for reverse invitations.
+- Limits: 20 outgoing pending, 200 active relationships including pending per player; 24h cooldown after close. Closed records remain private to enforce cooldown. No email, chat messages or invitations sent to real users during testing.
+- UI polls every 30s while visible and on focus; retries manual, account-keyed component, outdated responses ignored, 12s request timeout. No presence or multiplayer invitations in this milestone.
+- Production build/TypeScript and existing 37 Node tests passed. tests/friendships.sql passed against dev in rollback: lifecycle, duplicate/reverse send, private lists, owner/recipient enforcement, stale UUID, self/wildcard rejection, cooldown, anon/direct table denial. Real two-account browser test remains for users.
+- Advisors: intentional private RLS-without-policy INFO; existing leaked-password protection WARN remains outside this change. Remediation: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
