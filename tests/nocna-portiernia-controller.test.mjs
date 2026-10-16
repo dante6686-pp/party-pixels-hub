@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 import { initialState, decide, validCheckpoint } from '../apps/hub/public/games/nocna-portiernia/logic.mjs';
 import { visits, residents, PROTOTYPE_LIMIT } from '../apps/hub/public/games/nocna-portiernia/scenario.mjs';
+import { requestDefaultFullscreen } from '../apps/hub/public/games/nocna-portiernia/fullscreen.mjs';
 const base=new URL('../apps/hub/public/games/nocna-portiernia/',import.meta.url);
 
 function harness({brokenStorage=false}={}){
@@ -28,7 +29,7 @@ function harness({brokenStorage=false}={}){
   const storage=new Map();
   const renderer={portraits:Object.fromEntries(residents.map(r=>[r.id,'data:image/png;base64,test'])),show(){},center(){},pause(){},depart(){},flicker(){},rattle(){}};
   const context=vm.createContext({document,window,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>{if(brokenStorage)throw Error('QUOTA');storage.set(k,v);}},
-    createScene:()=>renderer,createAudio:()=>({pause(){},resume(){},enabled(){},cue(){}}),residents,visits,PROTOTYPE_LIMIT,initialState,decide,validCheckpoint,structuredClone,console,
+    createScene:()=>renderer,createAudio:()=>({pause(){},resume(){},enabled(){},cue(){}}),residents,visits,PROTOTYPE_LIMIT,initialState,decide,validCheckpoint,requestDefaultFullscreen,structuredClone,console,
     IntersectionObserver:class{observe(){}},requestAnimationFrame:fn=>frames.push(fn)});
   vm.runInContext(readFileSync(new URL('main.mjs',base),'utf8').replace(/^import .+;$/gm,''),context);
   return {get,storage,events,click(id){assert.equal(get(id).disabled,false,`${id} should be enabled`);get(id).onclick();},
