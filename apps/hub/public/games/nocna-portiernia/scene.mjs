@@ -44,15 +44,21 @@ export function makePerson(id){
   return p;
 }
 
+export function cameraFrame(width,height,portrait){
+  const z=portrait?.95:1.6,y=portrait?1.64:1.7,distance=z+1.1;
+  const worldHeight=Math.max(portrait?1.25:1.75,.72/(width/height));
+  return {z,y,pitch:portrait?-.035:-.055,fov:THREE.MathUtils.radToDeg(2*Math.atan(worldHeight/(2*distance)))};
+}
+
 export function createScene(container,onInspect,onContextLost){
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));
-  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#131e19');scene.fog=new THREE.Fog('#131e19',5,13);
   const camera=new THREE.PerspectiveCamera(53,1,.08,25);camera.position.set(0,1.55,2.75);
-  scene.add(new THREE.HemisphereLight('#d9e3bd','#29312c',1.45));
-  const fluorescent=new THREE.PointLight('#d6edb9',20,10,2);fluorescent.position.set(0,2.6,.1);scene.add(fluorescent);
-  const visitorLight=new THREE.PointLight('#e9e1c7',9,5,2);visitorLight.position.set(0,2.05,-.1);scene.add(visitorLight);
+  scene.add(new THREE.HemisphereLight('#d9ded8','#29312c',.95));
+  const fluorescent=new THREE.PointLight('#d6e1c8',7,10,2);fluorescent.position.set(0,2.6,.1);scene.add(fluorescent);
+  const visitorLight=new THREE.PointLight('#f5eee6',3.5,5,2);visitorLight.position.set(0,1.95,-.1);scene.add(visitorLight);
   box(scene,8,.1,12,0,-.1,-2,'#3a4036');box(scene,8,.2,10,0,2.9,-2,'#394438');
   for(const x of [-3,3]){box(scene,.2,3,10,x,1.35,-2,'#5f6b55');box(scene,.22,1.12,10,x,.47,-2,'#3a4e43');}
   box(scene,8,3,.15,0,1.35,-5,'#53624d');
@@ -85,16 +91,16 @@ export function createScene(container,onInspect,onContextLost){
   for(const resident of residents){const model=makePerson(resident.id);portraitScene.add(model);renderer.render(portraitScene,portraitCamera);portraits[resident.id]=renderer.domElement.toDataURL('image/png');portraitScene.remove(model);}
   container.append(renderer.domElement);
   const visitor=new THREE.Group();visitor.position.set(0,0,-1.1);scene.add(visitor);
-  let yaw=0,pitch=0,gesture=null,dragged=false,time=0,last=0,paused=true,departing=false,approach=0,flash=0,allowFlash=false,dirty=true;
+  let yaw=0,pitch=0,basePitch=0,gesture=null,dragged=false,time=0,last=0,paused=true,departing=false,approach=0,flash=0,allowFlash=false,dirty=true;
   const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
-  function resize(){gesture=null;dirty=true;const r=container.getBoundingClientRect();camera.aspect=r.width/r.height;camera.fov=r.width<r.height?61:50;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false);}
+  function resize(){gesture=null;dirty=true;const r=container.getBoundingClientRect();if(!r.width||!r.height)return;const frame=cameraFrame(r.width,r.height,window.innerWidth<window.innerHeight);camera.aspect=r.width/r.height;camera.fov=frame.fov;camera.position.set(0,frame.y,frame.z);basePitch=frame.pitch;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false);}
   resize();const observer=new ResizeObserver(resize);observer.observe(container);
   container.addEventListener('pointerdown',e=>{if(paused||gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY};dragged=false;container.setPointerCapture(e.pointerId);});
   container.addEventListener('pointermove',e=>{if(!gesture||e.pointerId!==gesture.id)return;const dx=e.clientX-gesture.lastX,dy=e.clientY-gesture.lastY;if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>7)dragged=true;if(dragged){yaw=THREE.MathUtils.clamp(yaw-dx*.003,-.62,.62);pitch=THREE.MathUtils.clamp(pitch-dy*.002,-.28,.25);}gesture.lastX=e.clientX;gesture.lastY=e.clientY;});
   container.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;const click=!dragged;gesture=null;if(!click||paused)return;const r=container.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects([card,register])[0];if(hit)onInspect(hit.object.userData.inspect);});
   for(const type of ['pointercancel','lostpointercapture'])container.addEventListener(type,()=>{gesture=null;});
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;onContextLost();});
-  function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.05);last=now;if(paused&&!dirty)return;if(!paused){time+=dt;approach=Math.min(1,approach+dt*.85);visitor.position.z=departing?-1.1-time*1.2:-1.1-(1-approach)*2.8;visitor.position.x=departing?time*.65:0;visitor.rotation.y=departing?.7:Math.sin(time*.55)*.035;if(flash>0)flash=Math.max(0,flash-dt);}fluorescent.intensity=flash>0&&allowFlash?(Math.sin(flash*28)>0?9:20):20;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);renderer.render(scene,camera);dirty=false;}
+  function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.05);last=now;if(paused&&!dirty)return;if(!paused){time+=dt;approach=Math.min(1,approach+dt*.85);visitor.position.z=departing?-1.1-time*1.2:-1.1-(1-approach)*2.8;visitor.position.x=departing?time*.65:0;visitor.rotation.y=departing?.7:Math.sin(time*.55)*.035;if(flash>0)flash=Math.max(0,flash-dt);}fluorescent.intensity=flash>0&&allowFlash?(Math.sin(flash*28)>0?3:7):7;camera.rotation.order='YXZ';camera.rotation.set(basePitch+pitch,yaw,0);renderer.render(scene,camera);dirty=false;}
   requestAnimationFrame(animate);
   return {portraits,show(id){visitor.clear();visitor.add(makePerson(id));time=0;approach=0;departing=false;yaw=0;pitch=0;dirty=true;},depart(){departing=true;time=0;},pause(value){paused=value;gesture=null;dirty=true;},center(){yaw=0;pitch=0;dirty=true;},flicker(enabled){allowFlash=enabled;flash=.35;},rattle(){handle.rotation.x=-.35;dirty=true;},dispose(){observer.disconnect();renderer.dispose();}};
 }

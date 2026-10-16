@@ -7,29 +7,30 @@
 </head>
 <body>
   <main id="game" aria-label="Nocna portiernia">
-    <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
-    <div class="vignette" aria-hidden="true"></div>
-    <header class="hud"><div><span class="eyebrow">JESIONOWA 12 · PORTIERNIA</span><strong id="clock">03:00</strong></div><button id="pause" aria-label="Otwórz pauzę">Ⅱ <span>Pauza</span></button></header>
-    <div class="status"><span id="visit">PROTOTYP · 2 WIZYTY</span><span id="mistakes" aria-label="Brak naruszeń">● ● ●</span></div>
-    <div id="save-status" role="status"></div>
-    <section id="dialogue" class="dialogue" aria-live="polite"><span class="eyebrow">NOCNA ZMIANA</span><p>Za szybą ktoś czeka.</p></section>
-    <div id="controls" class="controls" hidden>
-      <p id="input-hint" class="hint">Przeciągnij widok, aby się rozejrzeć.</p>
-      <div class="tools"><button id="card">Karta mieszkańca</button><button id="register">Spis lokatorów</button></div>
-      <p id="tutorial" class="hint">Obejrzyj kartę i spis, zanim podejmiesz decyzję.</p>
+    <header class="hud">
+      <div class="statusbar"><span><strong id="clock">03:00</strong> · <span id="visit">Wizyta 1/2</span></span><span id="mistakes">Błędy 0/3</span><button id="pause" aria-label="Otwórz pauzę">Ⅱ</button></div>
+      <p id="save-status" role="status" hidden></p>
+    </header>
+    <section id="stage" class="stage" aria-label="Okienko portierni">
+      <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <p id="input-hint" class="gesture-hint">Przeciągnij widok, aby się rozejrzeć.</p>
+    </section>
+    <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy">Za szybą ktoś czeka.</p><button id="dialog-expand" hidden>Cały dialog</button></section>
+    <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
+      <nav class="tools" aria-label="Dokumenty i instrukcja"><button id="card" aria-controls="inspection" aria-pressed="true">Karta</button><button id="register" aria-controls="inspection" aria-pressed="false">Porównaj ze spisem</button><button id="instructions" aria-label="Instrukcja">?</button><button id="look" aria-label="Spójrz na gościa" title="Spójrz na gościa">↑</button></nav>
+      <section id="inspection" class="inspection" aria-label="Dokumenty do porównania" hidden>
+        <div id="register-picker" class="picker" hidden><label for="resident-select">Spis</label><select id="resident-select"></select></div>
+        <div id="documents" class="documents">
+          <article id="card-sheet" class="paper"><h2>Karta mieszkańca</h2><div id="card-content"></div></article>
+          <article id="resident-sheet" class="paper" hidden><h2>Wpis w spisie</h2><div id="resident-content"></div></article>
+        </div>
+      </section>
+      <p id="tutorial" class="hint" role="status">Obejrzyj kartę i porównaj ją ze spisem.</p>
       <div class="decisions"><button id="deny" class="deny" disabled>Odmów</button><button id="allow" class="allow" disabled>Wpuść</button></div>
-    </div>
-    <section id="inspection" class="inspection" role="dialog" aria-modal="true" aria-labelledby="inspection-title" hidden>
-      <header><div><span class="eyebrow">KONTROLA DOKUMENTÓW</span><h2 id="inspection-title">Porównaj dane i twarz</h2></div><button id="close-inspection" aria-label="Zamknij dokumenty">✕</button></header>
-      <div class="documents">
-        <article class="paper"><span class="stamp">JESIONOWA 12</span><h3>Karta mieszkańca</h3><div id="card-content"></div></article>
-        <article class="paper"><span class="stamp">SPIS AKTUALNY</span><h3>Lokatorzy</h3><label for="resident-select">Wybierz wpis do porównania</label><select id="resident-select"></select><div id="resident-content"></div></article>
-      </div>
-      <button id="look" class="look">Spójrz na gościa</button>
-      <p class="inspection-note">Nazwisko, mieszkanie i twarz muszą zgadzać się z tym samym wpisem.</p>
     </section>
     <section id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Menu gry"><div class="panel" id="panel"></div></section>
-    <div id="fatal" class="overlay" hidden><div class="panel"><span class="eyebrow">GRAFIKA 3D NIEDOSTĘPNA</span><h1>Nie udało się otworzyć portierni</h1><p id="fatal-detail">Ta przeglądarka nie udostępnia WebGL. Sprawdź akcelerację sprzętową lub otwórz grę w innej przeglądarce.</p><button onclick="location.reload()">Spróbuj ponownie</button></div></div>
+    <section id="fatal" class="overlay" role="alertdialog" aria-modal="true" aria-labelledby="fatal-title" hidden><div class="panel"><span class="eyebrow">GRAFIKA 3D NIEDOSTĘPNA</span><h1 id="fatal-title">Nie udało się otworzyć portierni</h1><p id="fatal-detail">Ta przeglądarka nie udostępnia WebGL. Sprawdź akcelerację sprzętową lub otwórz grę w innej przeglądarce.</p><button onclick="location.reload()">Spróbuj ponownie</button></div></section>
   </main>
   <script type="module" src="main.mjs"></script>
 </body></html>
