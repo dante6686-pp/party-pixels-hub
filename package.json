@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "engines": { "node": ">=24" },
-  "workspaces": ["packages/*"],
-  "scripts": { "test": "node --test tests/*.test.ts" }
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": { "test": "node --test tests/*.test.ts", "build": "npm run build --workspace @party-pixels/hub" }
 }

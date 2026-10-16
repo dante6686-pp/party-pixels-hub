@@ -22,3 +22,13 @@ To pierwszy moduł kodu, nie działający hub ani kompletny SDK. Brak interfejsu
 4. Kanał SDK na oddzielnym originie i dwie małe gry integracyjne.
 
 Wybrano osobną gałąź w istniejącym repo jako odwracalną lokalizację pracy. Nie jest to zatwierdzenie zmian w produkcji ani dodatkowego budżetu. Osobny projekt Vercel musi jawnie wskazywać nowy katalog aplikacji. Nie zmieniać konfiguracji istniejącego wdrożenia przez przypadkowe dodanie konfiguracji frameworka w katalogu głównym.
+
+## Aktualizacja: konto i profil
+
+Przygotowano `apps/hub`: Next.js 16.4.2, React 19.3.1, klient Supabase 2.118.0. Kod obsługuje rejestrację, logowanie, wylogowanie, reset hasła i zapis profilu z nickiem, nazwą oraz jednym z czterech avatarów. Sesja działa w przeglądarce; RLS zabezpiecza API danych.
+
+Osobny Supabase dev: `udmbzcabkkotedprspar`. Migracja `player_profiles` zastosowana. Test SQL w transakcji zakończonej rollback potwierdził własny zapis, odrzucenie cudzej edycji, unikalność nicka, ochronę właściciela, publiczny odczyt i brak zapisu anonimowego. Security advisors: brak uwag.
+
+`npm run build` i 7 dotychczasowych testów przeszło. Nie przeprowadzono jeszcze pełnej rejestracji z pocztą i testu interfejsu w przeglądarce. Potwierdzenia i reset wymagają właściwych adresów Auth URL Configuration; Google/Facebook i upload zdjęć pozostają poza zakresem tej zmiany.
+
+Próba utworzenia osobnego Preview Vercel `party-pixels-hub-v2-dev` została odrzucona przez automatyczną kontrolę: wymagana wyraźna zgoda na przesłanie źródeł i konfiguracji do hostingu. Brak potwierdzonego nowego deploymentu. Do budowania potrzebne są jedynie publiczny URL i publishable key nowego Supabase, bez service role.
