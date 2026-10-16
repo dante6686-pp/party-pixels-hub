@@ -60,3 +60,4 @@
 @media(max-width:1400px){.news-track{grid-auto-columns:calc((100% - 28px)/3)}}
 @media(max-width:1000px){.news-track{grid-auto-columns:calc((100% - 14px)/2)}}
 @media(max-width:600px){.whats-new{margin-bottom:28px}.news-heading{gap:8px}.news-heading .eyebrow{font-size:8px;letter-spacing:1.5px}.news-heading h2{font-size:24px}.news-heading>a{font-size:11px}.news-track{grid-auto-columns:86%;gap:14px}.news-card{padding:20px}.news-number{margin-top:18px}.news-archive{padding:20px 18px 36px}.news-day article{padding:20px}.news-day ol{padding-left:18px}.news-day li:before{left:-27px}}
+.news-archive>header{height:auto;display:block;border:0}.news-day>h2{letter-spacing:-.4px;line-height:1.4}
