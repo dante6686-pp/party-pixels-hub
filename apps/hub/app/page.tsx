@@ -3,6 +3,7 @@
 import {useEffect, useState, type FormEvent} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {getClient, avatars, type Profile} from '../lib/client';
+import Arcade from './arcade';
 
 type Mode = 'login' | 'signup' | 'reset' | 'password';
 export default function Home() {
@@ -144,6 +145,6 @@ export default function Home() {
       </>}
       {notice && <p className="notice" role="status" aria-live="polite">{notice}</p>}
       <div className="card-bottom"><span className="dot"/> JEDEN PROFIL. TWOJE PARTY PIXELS.</div>
-    </section></div><footer><span>© Party Pixels 2026</span><span>Made for good times.</span></footer>
+    </section></div>{user&&profile&&mode!=='password'&&<Arcade key={user.id} profile={profile}/>}<footer><span>© Party Pixels 2026</span><span>Made for good times.</span></footer>
   </main>;
 }
