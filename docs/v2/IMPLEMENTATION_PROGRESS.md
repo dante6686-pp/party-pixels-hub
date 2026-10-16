@@ -97,3 +97,11 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - Library refreshes on games-view activation, browser focus, successful local play tracking and manual refresh. No local-storage account data or guest cloud library.
 - Build/TypeScript and existing 37 Node tests passed. SQL rollback suite passed: favorite idempotency, recent/favorite independence, all catalog ids, invalid operations, checkpoint metadata, third-account read/write protection, anonymous/direct table denial. Advisors: 7 intentional private RLS-without-policy INFO, pre-existing leaked password WARN outside scope. https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - Signed-in browser/two-device UI test remains user confirmation; current cloud browser is logged out.
+
+## 2026-10-16 — Personal library placement and portrait-first games
+- Patryk corrected scope: personal library must contain favorites and recently played only, live in a separate navigation view and on Profile, and never be the full catalog or appear on Discover.
+- Added Biblioteka as the fifth responsive navigation entry. One shared library component appears only in Library/Profile. Removed All filter; defaults to favorites. Empty states link to Discover. Continue requires a saved campaign that also belongs to favorites/recents.
+- Discover retains full catalog and now hosts favorite controls on 3D and native game cards. Changes synchronize with the account library through the existing checked API. Native library links switch to Discover and scroll to the playable card.
+- MAGAZYN AUTO no longer requests landscape orientation or asks users to rotate. Removed orientation-lock capability from frame/CSP. Phone portrait camera uses wider FOV and steeper view; portrait HUD places objective at top, compact status/minimap below, thumb controls at bottom, adapted short portrait layout and safe areas.
+- Updated GAME_PLAYER and shared product/designer guidance: portrait is the default priority for new mobile games; PC and optional landscape layouts remain supported.
+- No database changes. Build/TypeScript and 37 tests passed, including full campaign/geometry/frame protocol tests. GPU gameplay and actual phone layout remain user verification because cloud WebGL is disabled.

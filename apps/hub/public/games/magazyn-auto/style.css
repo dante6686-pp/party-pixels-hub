@@ -16,3 +16,32 @@ body.playing .platform-player{display:none}
 @media(max-width:600px) and (orientation:portrait){.mission-panel{top:225px}.minimap-panel{top:78px}.status-panel{top:78px}.compass{top:200px}.radio{bottom:170px}.arrest{top:330px}}
 
 .mission-banner>span{font-size:clamp(18px,3vw,30px);line-height:1.25;max-width:80vw;margin:auto;letter-spacing:-.5px}.mission-panel>div{font-weight:700}.save-status{max-width:70vw;white-space:normal;text-align:center}
+
+/* Portrait is the primary phone layout. Keep objectives above the play area. */
+@media(orientation:portrait) and (max-width:760px){
+ header{padding:10px 12px}.wordmark{font-size:8px}.wordmark span{font-size:16px}.small-btn{min-width:44px;min-height:44px}
+ html[data-input="touch"] .mission-panel,.mission-panel{top:64px;left:12px;right:12px;transform:none;width:auto;padding:10px 12px}
+ .mission-panel>strong{font-size:13px}.mission-panel>p{font-size:11px;line-height:1.4;margin:5px 0}.mission-panel>span{font-size:9px}
+ html[data-input="touch"] .minimap-panel,.minimap-panel{top:190px;left:12px;width:96px;padding:3px}
+ html[data-input="touch"] .status-panel,.status-panel{top:190px;right:12px;min-width:128px;max-width:140px}
+ .cash{font-size:20px}.wanted{font-size:17px}.bar-row>span{font-size:6px}.bar-row>.bar{min-width:38px}.pursuit-status{font-size:7px}
+ html[data-input="touch"] .compass,.compass{top:160px;left:50%;padding:4px 8px}
+ html[data-input="touch"] .arrest,.arrest{top:305px;width:160px}
+ .touch-controls{left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom))}
+ .joystick{width:108px;height:108px}#knob{left:28px;top:28px;width:50px;height:50px}
+ .action{width:60px;height:60px}.enter-action{width:66px;height:66px}.boost-action{width:68px;height:68px}.action-cluster>div{gap:8px}
+ html[data-input="touch"] .radio,.radio{bottom:190px;max-width:calc(100vw - 32px);min-width:0;width:calc(100vw - 32px);padding:10px 12px}
+ .radio>p{font-size:11px}.radio>span{font-size:8px}
+ .toast{top:53%;max-width:88vw;font-size:12px}.mission-banner{top:48%}.mission-banner>span{font-size:24px}.mission-banner>b{font-size:16px}
+ .modal{padding:16px}.modal-card{padding:24px;max-height:100%;overflow:auto}.modal-card .primary{min-height:48px}.text-btn{min-height:44px}
+ .save-status{bottom:3px;font-size:8px;max-width:90vw}
+}
+@media(orientation:portrait) and (max-height:650px){
+ html[data-input="touch"] .minimap-panel{width:76px;top:180px}
+ html[data-input="touch"] .status-panel{top:180px}
+ html[data-input="touch"] .mission-panel{top:58px;padding:7px 10px}
+ html[data-input="touch"] .compass{top:153px}
+ html[data-input="touch"] .radio{bottom:155px}
+ .joystick{width:98px;height:98px}#knob{left:23px;top:23px}
+ .action{width:52px;height:52px}.enter-action{width:58px;height:58px}.boost-action{width:60px;height:60px}
+}

@@ -8,9 +8,9 @@ import GameLibrary from './game-library';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
 
-type View = 'games'|'friends'|'messages'|'profile';
-const views:View[]=['games','friends','messages','profile'];
-const viewNames={games:'Odkrywaj',friends:'Znajomi',messages:'Wiadomości',profile:'Twój profil'};
+type View = 'games'|'library'|'friends'|'messages'|'profile';
+const views:View[]=['games','library','friends','messages','profile'];
+const viewNames={games:'Odkrywaj',library:'Biblioteka',friends:'Znajomi',messages:'Wiadomości',profile:'Twój profil'};
 type Mode = 'login' | 'signup' | 'reset' | 'password';
 export default function Home() {
   const [view,setView]=useState<View>('games');
@@ -18,7 +18,7 @@ export default function Home() {
   const [unread,setUnread]=useState(0);
   function navigate(next:View){window.location.hash=next;}
   useEffect(()=>{
-    const sync=()=>{const hash=window.location.hash.slice(1);if(views.includes(hash as View))setView(hash as View);};
+    const sync=()=>{const hash=window.location.hash.slice(1);if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){setView('games');setTimeout(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}),0);}};
     sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
   },[]);
   useEffect(()=>{document.title=viewNames[view]+' · Party Pixels';},[view]);
@@ -141,12 +141,12 @@ export default function Home() {
     <aside className="hub-sidebar">
       <a className="brand" href="#games" aria-label="Party Pixels — gry"><span className="brand-icon">✳</span>party<span>pixels</span></a>
       <p className="sidebar-label">TWOJE MIEJSCE DO GRANIA</p>
-      <nav className="hub-nav" aria-label="Nawigacja główna">{views.map((v,i)=><a href={'#'+v} key={v} aria-current={view===v?'page':undefined}><span className="nav-icon" aria-hidden="true">{['◈','♧','▤','☺'][i]}</span><span>{viewNames[v]}</span>{((v==='friends'?invites:v==='messages'?unread:0)>0)&&<b className="nav-badge" aria-label={v==='friends'?'Nowe zaproszenia':'Rozmowy z nowymi wiadomościami'}>{v==='friends'?invites:unread}</b>}</a>)}</nav>
+      <nav className="hub-nav" aria-label="Nawigacja główna">{views.map((v,i)=><a href={'#'+v} key={v} aria-current={view===v?'page':undefined}><span className="nav-icon" aria-hidden="true">{['◈','▥','♧','▤','☺'][i]}</span><span>{viewNames[v]}</span>{((v==='friends'?invites:v==='messages'?unread:0)>0)&&<b className="nav-badge" aria-label={v==='friends'?'Nowe zaproszenia':'Rozmowy z nowymi wiadomościami'}>{v==='friends'?invites:unread}</b>}</a>)}</nav>
       <div className="sidebar-bottom"><span className="dot"/> WCZESNY DOSTĘP<p>Małe gry.<br/>Wielkie emocje.</p></div>
     </aside>
     <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games">✳ party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></header>
     <div id="hub-content" className="hub-content">
-    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section>{ready&&<PlayerLibrary key={user.id} owner={user.id} active={view==='games'}/>}<GameLibrary/>{ready?<Arcade key={user.id} profile={profile}/>:<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
+    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section><GameLibrary owner={ready?user.id:undefined}/>{ready?<Arcade key={user.id} profile={profile}/>:<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
     <div hidden={view!=='profile'} className="profile-view"><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className="account" aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading ? <p role="status">Sprawdzam sesję…</p> : user && mode !== 'password' ? <>
@@ -173,6 +173,7 @@ export default function Home() {
       {notice && <p className="notice" role="status" aria-live="polite">{notice}</p>}
       <div className="card-bottom"><span className="dot"/> JEDEN PROFIL. TWOJE PARTY PIXELS.</div>
     </section></div></div>
+    <div hidden={view!=='library'&&view!=='profile'}>{ready?<PlayerLibrary key={user.id} owner={user.id} active={view==='library'||view==='profile'}/>:view==='library'&&<section className="social-gate"><span aria-hidden="true">▥</span><h1>Twoje gry, po Twojemu.</h1><p>Zaloguj się i zapisuj ulubione gry. Tutaj znajdziesz też ostatnie rozgrywki.</p><a href="#profile" className="primary">Przejdź do profilu ↗</a></section>}</div>
     {ready?<Friends key={user.id} owner={user.id} view={view} onMessages={()=>navigate('messages')} onInvites={setInvites} onUnread={setUnread}/>:<div hidden={view!=='friends'&&view!=='messages'} className="social-gate"><span aria-hidden="true">{view==='friends'?'♧':'▤'}</span><h1>{view==='friends'?'Twoja ekipa czeka.':'Porozmawiajmy.'}</h1><p>{loading?'Sprawdzam Twoje konto…':user?'Zapisz profil, aby korzystać z funkcji społecznościowych.':'Zaloguj się, aby dodawać znajomych i wymieniać wiadomości.'}</p><a className="primary" href="#profile">Przejdź do profilu <span>↗</span></a></div>}
     <footer><span>© Party Pixels 2026</span><span>Made for good times.</span></footer>
     </div></div>

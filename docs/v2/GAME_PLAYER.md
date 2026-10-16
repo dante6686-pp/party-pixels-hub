@@ -2,9 +2,9 @@
 
 ## Standard produktu
 
-Party Pixels obsługuje głównie bardziej rozbudowane gry 3D oraz gry 2D. Jedna gra musi działać na telefonie z dotykiem oraz na PC z klawiaturą i myszą. Grę otwieramy w osobnym widoku na całe dostępne okno, bez przewijania huba. Przycisk Graj prosi o systemowy fullscreen w obsługujących go przeglądarkach. Brak tej funkcji lub odmowa nie blokują rozgrywki. Próba blokady orientacji poziomej dotyczy dotyku i następuje po wejściu w fullscreen; fallback to responsywny widok pionowy z podpowiedzią obrotu.
+Party Pixels obsługuje głównie bardziej rozbudowane gry 3D oraz gry 2D. Jedna gra musi działać na telefonie z dotykiem oraz na PC z klawiaturą i myszą. Grę otwieramy w osobnym widoku na całe dostępne okno, bez przewijania huba. Przycisk Graj prosi o systemowy fullscreen w obsługujących go przeglądarkach. Brak tej funkcji lub odmowa nie blokują rozgrywki. Telefon projektujemy w pierwszej kolejności dla orientacji pionowej. Host nie wymusza poziomu i nie proponuje obrotu. Fullscreen zachowuje orientację wybraną przez użytkownika; poziom pozostaje opcjonalnym responsywnym układem.
 
-Tryb Auto bierze pod uwagę pointer:coarse oraz faktyczne wejście dotykowe/klawiaturowe w obu dokumentach. Ręczny wybór Dotyk/Klawiatura ma pierwszeństwo. Przy obrocie/resize czyścimy przytrzymane wejścia; rozmiar canvasu i kamery śledzi dostępną przestrzeń. UI ma osobny układ dla krótkiego poziomego ekranu telefonu, safe-area i przyciski dotykowe co najmniej 44 px.
+Tryb Auto bierze pod uwagę pointer:coarse oraz faktyczne wejście dotykowe/klawiaturowe w obu dokumentach. Ręczny wybór Dotyk/Klawiatura ma pierwszeństwo. Przy obrocie/resize czyścimy przytrzymane wejścia; rozmiar canvasu i kamery śledzi dostępną przestrzeń. UI ma podstawowy układ portretowy: cel u góry, kompaktowe status/minimapa, sterowanie kciukami na dole. Krótki poziomy ekran pozostaje obsługiwany; safe-area i przyciski dotykowe co najmniej 44 px są wymagane.
 
 ## Pierwsza podłączona gra
 

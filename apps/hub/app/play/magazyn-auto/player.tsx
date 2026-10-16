@@ -48,7 +48,6 @@ function useIdentity() {
 
 type Choice='auto'|InputMode;
 type State='menu'|'playing'|'paused'|'complete'|'busted';
-type Orientation=ScreenOrientation&{lock?:(orientation:string)=>Promise<void>};
 export default function GameHost() {
   const {player,loading:identityLoading,error:identityError}=useIdentity();
   const shell=useRef<HTMLDivElement>(null),iframe=useRef<HTMLIFrameElement>(null),port=useRef<MessagePort|null>(null);
@@ -56,8 +55,7 @@ export default function GameHost() {
   const [started,setStarted]=useState(false),[state,setState]=useState<State>('menu');
   const [choice,setChoice]=useState<Choice>('auto'),[detected,setDetected]=useState<InputMode>('keyboard');
   const [full,setFull]=useState(false),[canFullscreen,setCanFullscreen]=useState(false);
-  const [hasSave,setHasSave]=useState(false),[notice,setNotice]=useState(''),[portrait,setPortrait]=useState(false);
-  const [rotateHint,setRotateHint]=useState(true);
+  const [hasSave,setHasSave]=useState(false),[notice,setNotice]=useState('');
   const [saveLoaded,setSaveLoaded]=useState(false),[syncStatus,setSyncStatus]=useState<SyncStatus>('loading');
   const [mission,setMission]=useState(0),[syncBusy,setSyncBusy]=useState(false);
   const saves=useRef<CheckpointSync|null>(null),initialSave=useRef<Checkpoint|null>(null);
@@ -67,27 +65,27 @@ export default function GameHost() {
   function send(data:Record<string,unknown>){port.current?.postMessage(data);}
 
   useEffect(()=>{
-    const coarse=matchMedia('(pointer: coarse)'),orientation=matchMedia('(orientation: portrait)');
-    const update=()=>{setDetected(coarse.matches?'touch':'keyboard');setPortrait(orientation.matches);};update();
+    const coarse=matchMedia('(pointer: coarse)');
+    const update=()=>{setDetected(coarse.matches?'touch':'keyboard');};update();
     const point=(event:PointerEvent)=>{if(event.pointerType==='touch')setDetected('touch');else if(event.pointerType==='mouse')setDetected('keyboard');};
     const key=(event:KeyboardEvent)=>{if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.code))setDetected('keyboard');};
-    coarse.addEventListener('change',update);orientation.addEventListener('change',update);
+    coarse.addEventListener('change',update);
     window.addEventListener('pointerdown',point);window.addEventListener('keydown',key);
-    return()=>{coarse.removeEventListener('change',update);orientation.removeEventListener('change',update);window.removeEventListener('pointerdown',point);window.removeEventListener('keydown',key);};
+    return()=>{coarse.removeEventListener('change',update);window.removeEventListener('pointerdown',point);window.removeEventListener('keydown',key);};
   },[]);
   useEffect(()=>{
     const oldOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
     setCanFullscreen(Boolean(document.fullscreenEnabled&&shell.current?.requestFullscreen));
     const changed=()=>{
       setFull(Boolean(document.fullscreenElement));
-      if(!document.fullscreenElement){port.current?.postMessage({type:'pause'});(screen.orientation as Orientation)?.unlock?.();}
+      if(!document.fullscreenElement){port.current?.postMessage({type:'pause'});}
     };
     const hidden=()=>{if(document.hidden)port.current?.postMessage({type:'pause'});};
     document.addEventListener('fullscreenchange',changed);document.addEventListener('visibilitychange',hidden);
     return()=>{
       document.body.style.overflow=oldOverflow;document.removeEventListener('fullscreenchange',changed);document.removeEventListener('visibilitychange',hidden);
       if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});
-      (screen.orientation as Orientation)?.unlock?.();
+      
     };
   },[]);
   useEffect(()=>{send({type:'input',mode});},[mode]);
@@ -162,7 +160,6 @@ export default function GameHost() {
     if(!shell.current?.requestFullscreen||!document.fullscreenEnabled)return;
     try{
       await shell.current.requestFullscreen();
-      if(modeRef.current==='touch')await (screen.orientation as Orientation)?.lock?.('landscape').catch(()=>{});
     }catch{setNotice('Gra wypełnia okno. Pełny ekran systemowy jest niedostępny w tej przeglądarce.');}
   }
   function launch(continued:boolean){
@@ -187,14 +184,13 @@ export default function GameHost() {
       </div>
     </div>
     <div className="game-stage">
-      {!identityLoading&&!identityError&&saveLoaded&&<iframe key={`${accountKey}:${attempt}`} ref={iframe} src={GAME.url} title={`${GAME.title}: ${GAME.subtitle}`} inert={!started||blocked||conflict} aria-hidden={!started||blocked||conflict} sandbox="allow-scripts allow-pointer-lock allow-orientation-lock" allow="autoplay; fullscreen" allowFullScreen referrerPolicy="origin" onError={()=>setError('Nie udało się pobrać gry. Spróbuj ponownie.')}/>}
+      {!identityLoading&&!identityError&&saveLoaded&&<iframe key={`${accountKey}:${attempt}`} ref={iframe} src={GAME.url} title={`${GAME.title}: ${GAME.subtitle}`} inert={!started||blocked||conflict} aria-hidden={!started||blocked||conflict} sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen" allowFullScreen referrerPolicy="origin" onError={()=>setError('Nie udało się pobrać gry. Spróbuj ponownie.')}/>}
       {(!started||blocked||conflict)&&<div className="player-gate"><div className="player-gate-copy"><p className="eyebrow">PARTY PIXELS / 3D</p><h1>MAGAZYN<br/><span>AUTO</span></h1><p className="gate-subtitle">Wielka Szychta</p>
-        {blocked?<><p role="alert">{identityError?'Nie udało się sprawdzić profilu. Odśwież stronę, żeby bezpiecznie wczytać swój zapis.':error}</p><button className="primary" onClick={()=>identityError?window.location.reload():retry()}>Spróbuj ponownie <span>↻</span></button></>:conflict?<><p role="alert">Na innym urządzeniu zapisano nowszy postęp. Wczytaj zapis konta, aby kontynuować. Twoją lokalną próbę zachowamy jako kopię na tym urządzeniu.</p><button className="primary" disabled={syncBusy} onClick={()=>void useCloud()}>{syncBusy?'Wczytuję…':'Wczytaj zapis konta'}</button></>:!ready?<p role="status">{identityLoading?'Sprawdzam profil…':!saveLoaded?'Wczytuję postęp…':'Otwieramy magazyn…'}</p>:<><p>Jedna hala. Siedem wózków. Żadnego paragonu.</p><p className="campaign-stage">{campaignTitle(mission)}</p><p className="campaign-outline">1. Złota paleta → 2. Terminale z grafikiem → 3. Worek i Brama 03</p>{mission>=3&&<p>Teraz dostawy palet powtarzają się bez końca. Możesz też rozpocząć trzy misje od początku.</p>}<p className="gate-controls">{mode==='touch'?'Lewy kciuk: joystick. Prawy: wsiadanie, akcja i nitro.':'WASD / strzałki: ruch · E: wsiadanie · Spacja: akcja · Shift: nitro · P: pauza'}</p>{mode==='touch'&&portrait&&<p className="rotate-copy">↻ Obróć telefon poziomo — zobaczysz więcej hali.</p>}
+        {blocked?<><p role="alert">{identityError?'Nie udało się sprawdzić profilu. Odśwież stronę, żeby bezpiecznie wczytać swój zapis.':error}</p><button className="primary" onClick={()=>identityError?window.location.reload():retry()}>Spróbuj ponownie <span>↻</span></button></>:conflict?<><p role="alert">Na innym urządzeniu zapisano nowszy postęp. Wczytaj zapis konta, aby kontynuować. Twoją lokalną próbę zachowamy jako kopię na tym urządzeniu.</p><button className="primary" disabled={syncBusy} onClick={()=>void useCloud()}>{syncBusy?'Wczytuję…':'Wczytaj zapis konta'}</button></>:!ready?<p role="status">{identityLoading?'Sprawdzam profil…':!saveLoaded?'Wczytuję postęp…':'Otwieramy magazyn…'}</p>:<><p>Jedna hala. Siedem wózków. Żadnego paragonu.</p><p className="campaign-stage">{campaignTitle(mission)}</p><p className="campaign-outline">1. Złota paleta → 2. Terminale z grafikiem → 3. Worek i Brama 03</p>{mission>=3&&<p>Teraz dostawy palet powtarzają się bez końca. Możesz też rozpocząć trzy misje od początku.</p>}<p className="gate-controls">{mode==='touch'?'Lewy kciuk: joystick. Prawy: wsiadanie, akcja i nitro.':'WASD / strzałki: ruch · E: wsiadanie · Spacja: akcja · Shift: nitro · P: pauza'}</p>
           <button className="primary" onClick={()=>launch(hasSave)}>{hasSave?(mission>=3?'Kontynuuj wolną jazdę':`Kontynuuj misję ${mission+1}/3`):'Graj — misja 1/3'} <span>→</span></button>{hasSave&&<button className="text-button" onClick={()=>launch(false)}>Rozpocznij kampanię od nowa</button>}
           <p className="local-save-note">{player?`Postęp dla ${player.displayName} zapisujemy na koncie. Sprawdzaj potwierdzenie w górnym pasku.`:'Gość: zapis tylko na tym urządzeniu. Zaloguj się w hubie, aby mieć zapis na koncie.'}<br/>Checkpoint po misji. Bez wspólnego rankingu.</p>
         </>}
       </div></div>}
-      {started&&mode==='touch'&&portrait&&rotateHint&&!blocked&&<button className="rotate-hint" onClick={()=>setRotateHint(false)}>↻ Wygodniej grać poziomo <span>×</span></button>}
     </div>
     {notice&&<div className="player-notice" role="status">{notice}<button onClick={()=>setNotice('')} aria-label="Zamknij komunikat">×</button></div>}
   </div>;
