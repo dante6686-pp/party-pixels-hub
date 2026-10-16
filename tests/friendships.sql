@@ -39,12 +39,20 @@ begin
  r:=public.pp_friends(a,'list');req:=(r->0->>'request_id')::uuid;
  perform public.pp_friends(a,'cancel',c,req);
  if public.pp_friends(a,'list')<>'[]'::jsonb then raise exception 'FAIL cancel';end if;
+ perform public.pp_friends(a,'send',c);
+ r:=public.pp_friends(a,'list');
+ if (r->0->>'request_id')::uuid=req then raise exception 'FAIL retry reused generation';end if;
+ begin perform public.pp_friends(a,'cancel',c,req);raise exception 'FAIL old cancel affects new invite';exception when raise_exception then if sqlerrm<>'STALE_REQUEST' then raise;end if;end;
+ perform public.pp_friends(a,'cancel',c,(r->0->>'request_id')::uuid);
+
  perform set_config('request.jwt.claim.sub',b::text,true);
  perform public.pp_friends(b,'send',c);
  perform set_config('request.jwt.claim.sub',c::text,true);
  r:=public.pp_friends(c,'list');req:=(r->0->>'request_id')::uuid;
  perform public.pp_friends(c,'decline',b,req);
  if public.pp_friends(c,'list')<>'[]'::jsonb then raise exception 'FAIL decline';end if;
+ perform set_config('request.jwt.claim.sub',b::text,true);
+ begin perform public.pp_friends(b,'send',c);raise exception 'FAIL decline cooldown';exception when raise_exception then if sqlerrm<>'COOLDOWN' then raise;end if;end;
 end $$;
 reset role;
 set local role anon;

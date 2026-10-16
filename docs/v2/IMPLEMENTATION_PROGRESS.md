@@ -63,3 +63,8 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - UI polls every 30s while visible and on focus; retries manual, account-keyed component, outdated responses ignored, 12s request timeout. No presence or multiplayer invitations in this milestone.
 - Production build/TypeScript and existing 37 Node tests passed. tests/friendships.sql passed against dev in rollback: lifecycle, duplicate/reverse send, private lists, owner/recipient enforcement, stale UUID, self/wildcard rejection, cooldown, anon/direct table denial. Real two-account browser test remains for users.
 - Advisors: intentional private RLS-without-policy INFO; existing leaked-password protection WARN remains outside this change. Remediation: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
+
+## 2026-10-16 — Immediate retry after cancelling an invitation
+- Fixed excessive 24h cooldown: sender cancellation now permits immediate resend. Decline/removal still enforce cooldown.
+- Added closed_reason without guessing historical reasons. Corrected only the single closed test relationship involving dante6686, based on Patryk's report that he cancelled it. No invitation sent and no friendship accepted on his behalf.
+- SQL lifecycle suite passed with immediate cancel/resend, new request generation, rejection of old cancel, and preserved decline/removal cooldown.
