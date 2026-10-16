@@ -70,3 +70,13 @@ Wdrożony kod fba8fbf2d02d52e72b911940d5b62105e0688f74: kompaktowy HUD, osobny o
 Testy: 52/52 Node. Symulacja kontrolera obejmuje powyższe ścieżki oraz pauzę/restart/wznowienie. Geometria kamery mieści sześć głów/fryzur w pięciu przykładowych obszarach sceny. Nie wykonano wizualnego QA, screenshotów ani testu fizycznego dotyku. To nadal testy logiki/geometrii, nie testy viewportów przeglądarki. Ograniczenie infrastruktury podglądu opisane wyżej pozostaje aktualne. Do odbioru: 360×640, 390×844, 412×915, niski poziom, PC 1366×768 i rzeczywista próba telefonu; także pomiar kontrastu całego UI.
 
 Ten sam [prywatny podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site) wdrożony ze statusem succeeded, deployment `appgdep_6ad29606077881919798de64bc0497e9`, pakiet `111c96adfa9f3c9f8c7b37877a6d4a0e8665f74b`. Gra nadal poza katalogiem huba.
+
+## Rozdział 23 GDD — 17.10.2026
+
+Kod `e7d1d6fc962f20607497ee99d9ef73b82b2c9eb3`: subtelne addytywne kołysanie kamery (yaw 0,25°, pitch 0,20°, roll 0,06°; okresy 7,7 / 6,3 / 8,9 s), płynne tłumienie do 15% przy dokumentach i do zera przy modalu. Przełącznik „Kołysanie kamery” w menu/pauzie; domyślnie wyłączone przy prefers-reduced-motion. Pauza zamraża fazę, UI pozostaje nieruchome. Strojenie amplitud wymaga telefonu.
+
+Gość przedstawia „Podane informacje” i „Przedstawione zdjęcie”; prawdziwy wpis to „Karta lokatora”. Powiększenie zdjęcia nie ujawnia automatycznie nazwiska modelu. Każda wizyta zaczyna się z pustym spisem i placeholderem „Wybierz lokatora…”. Wyświetlenie wybranego lokatora dopiero po ręcznym wyborze; wybór zachowany w tej samej wizycie, zerowany przy następnej/nowej zmianie/wznowieniu. Pusta sekcja nie zalicza samouczka; druga wizyta nie ma nowej blokady. Reguły i checkpoint bez zmian.
+
+57/57 testów Node zaliczonych: nowy zakres kontrolera/reduced-motion i kołysania, regresja reguł/zapisu/fullscreen oraz geometria kadru ze skrajnymi kątami. To testy symulowane, nie WebGL/dotyk ani ocena wyglądu na urządzeniu. Potrzebny test odczucia ruchu, podpisów, pustego spisu i czytelności na telefonie.
+
+Ten sam [prywatny podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site), succeeded: `appgdep_6ad29ed5fc608191b04fffe527dabb7d`, pakiet Sites `291a4f17f428f50ca3051a5d90916ce4861794b6`. Nadal dwuwizytowy prototyp poza katalogiem huba.
