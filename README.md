@@ -1,2 +1,0 @@
-# party-pixels-hub
-

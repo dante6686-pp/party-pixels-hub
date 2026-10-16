@@ -4,6 +4,9 @@ export type HubUpdate = {id:string; date:string; category:UpdateCategory; title:
 // Public release notes only. Keep stable IDs and list newest releases first,
 // including the editorial order of releases published on the same day.
 export const updates: readonly HubUpdate[] = [
+ {id:'2026-10-17-03',date:'2026-10-17',category:'Społeczność',title:'Twoja opinia ma znaczenie',description:'Oceniaj gry od 1 do 5 i zostawiaj komentarze na ich stronach. Średnią ocen zobaczysz także w katalogu.'},
+ {id:'2026-10-17-02',date:'2026-10-17',category:'Gry',title:'Sprawdź, kto prowadzi',description:'Rankingi Szybkiej piątki i Złap 2 sekundy znajdziesz na stronach tych gier. Zobacz top 20, swój rekord i miejsce w tabeli.'},
+ {id:'2026-10-17-01',date:'2026-10-17',category:'Społeczność',title:'Twoja ekipa daje znać',description:'Dzwonek w hubie zbiera zaproszenia do znajomych i nieprzeczytane rozmowy. Kliknij powiadomienie, żeby do nich przejść.'},
  {id:'2026-10-16-08',date:'2026-10-16',category:'Nowość',title:'Nowości mają swoje miejsce',description:'Zobacz najświeższe zmiany nad katalogiem gier. Przesuwaj kafelki i zajrzyj do pełnej historii, żeby nic Cię nie ominęło.'},
  {id:'2026-10-16-07',date:'2026-10-16',category:'Usprawnienie',title:'Wszystkie filtry? Jeden klik.',description:'Przycisk „Wyczyść filtry” usuwa wybrane filtry i tekst wyszukiwania. Jest pod ręką także po zwinięciu panelu.'},
  {id:'2026-10-16-06',date:'2026-10-16',category:'Gry',title:'Łatwiej znaleźć coś do grania',description:'Szukaj po tytule lub opisie i filtruj gry według grafiki, trybu oraz kategorii. Wyszukiwarka rozwija się dopiero wtedy, gdy jej potrzebujesz.'},
