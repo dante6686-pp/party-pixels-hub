@@ -1,0 +1,10 @@
+export const games=[
+ {id:'magazyn-auto',title:'MAGAZYN AUTO',subtitle:'Wielka Szychta',dimension:'3d',mode:'solo',category:'Akcja',symbol:'▰',description:'Przejmij wózek, wywieź złotą paletę i zgub ochronę. Trzy misje, otwarta hala i wolna jazda po godzinach.',controls:'Telefon: lewy joystick — ruch; prawy kciuk — wsiadanie, akcja i nitro. PC: WASD lub strzałki, E, Spacja, Shift; P — pauza.',save:'Kampania ma checkpoint na koncie po misji. Gość ma zapis na urządzeniu.',play:'/play/magazyn-auto',orientation:'Telefon w pionie · PC',account:false},
+ {id:'quick-math',title:'Szybka piątka',subtitle:'Pięć działań, jeden wynik',dimension:'2d',mode:'solo',category:'Logiczne',symbol:'＋',description:'Rozwiąż pięć krótkich działań. Sprawdź swoją celność i zapisz wynik w rankingu.',controls:'Telefon i PC: wpisuj odpowiedzi w polach i zatwierdź rundę przyciskiem. Nie ma limitu czasu wymagającego szybkiego klikania.',save:'Każda runda zaczyna się od nowa. Konto zapisuje wyniki i rekord.',play:'/play/quick-math',orientation:'Telefon w pionie · PC',account:true},
+ {id:'two-seconds',title:'Złap 2 sekundy',subtitle:'Wyłącz stoper w głowie',dimension:'2d',mode:'solo',category:'Zręcznościowe',symbol:'◷',description:'Uruchom stoper i zatrzymaj go po dwóch sekundach. Bez podglądania. Im mniejszy błąd, tym lepiej.',controls:'Dotknij lub kliknij przycisk startu, a potem zatrzymaj stoper. Na PC przycisk obsługuje też klawiaturę.',save:'Nowa runda przy każdym starcie. Rekord i ranking na koncie; czas deklaruje przeglądarka, więc wynik jest niezweryfikowany.',play:'/play/two-seconds',orientation:'Telefon w pionie · PC',account:true},
+] as const;
+export type CatalogGame=typeof games[number];
+export function filterGames(query:string,dimension:string,mode:string,category:string){
+ const term=query.trim().toLocaleLowerCase('pl-PL');
+ return games.filter(g=>(!term||(g.title+' '+g.subtitle+' '+g.description).toLocaleLowerCase('pl-PL').includes(term))&&(dimension==='all'||g.dimension===dimension)&&(mode==='all'||g.mode===mode)&&(category==='all'||g.category===category));
+}
