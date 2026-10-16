@@ -4,7 +4,7 @@ import {avatars,getClient,type Profile} from '../lib/client';
 import Messages from './messages';
 import {profileHref} from './profile-card';
 type Person=Profile & {request_id:string|null;relation:'none'|'friend'|'incoming'|'outgoing'};
-const errors:Record<string,string>={PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',PROFILE_REQUIRED:'Potwierdź e-mail i zapisz profil.',COOLDOWN:'Ponowne zaproszenie do tej osoby będzie dostępne po 24 godzinach.',FRIEND_LIMIT:'Limit: 20 wysłanych zaproszeń lub 200 znajomości i zaproszeń na konto.',STALE_REQUEST:'Zaproszenie się zmieniło. Odśwież listę.',INVALID_TRANSITION:'Stan zaproszenia się zmienił. Odśwież listę.'};
+const errors:Record<string,string>={CONTACT_UNAVAILABLE:'Kontakt z tym graczem jest niedostępny.',PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',PROFILE_REQUIRED:'Potwierdź e-mail i zapisz profil.',COOLDOWN:'Ponowne zaproszenie do tej osoby będzie dostępne po 24 godzinach.',FRIEND_LIMIT:'Limit: 20 wysłanych zaproszeń lub 200 znajomości i zaproszeń na konto.',STALE_REQUEST:'Zaproszenie się zmieniło. Odśwież listę.',INVALID_TRANSITION:'Stan zaproszenia się zmienił. Odśwież listę.'};
 export default function Friends({owner,view,onMessages,onInvites,onUnread}:{owner:string;view:string;onMessages:()=>void;onInvites:(n:number)=>void;onUnread:(n:number)=>void}){
  const [selected,setSelected]=useState<Profile|null>(null);
  const [people,setPeople]=useState<Person[]>([]),[results,setResults]=useState<Person[]|null>(null),[query,setQuery]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState<string|null>(null);
@@ -25,6 +25,15 @@ export default function Friends({owner,view,onMessages,onInvites,onUnread}:{owne
   window.addEventListener('focus',focus);document.addEventListener('visibilitychange',focus);
   return()=>{alive.current=false;searchRev.current++;listRev.current++;clearInterval(timer);window.removeEventListener('focus',focus);document.removeEventListener('visibilitychange',focus);};
  },[refresh]);
+ useEffect(()=>{
+  let alive=true;
+  const open=()=>{
+   const match=window.location.hash.match(/^#chat\/([a-z0-9_]{3,20})$/);if(!match)return;
+   const client=getClient();if(!client)return;
+   void client.from('profiles').select('player_id,handle,display_name,avatar_key').eq('handle',match[1]).maybeSingle().then(({data,error})=>{if(alive&&!error&&data){setSelected(data as Profile);onMessages();}else if(alive)setNotice('Nie udało się otworzyć profilu rozmówcy.');});
+  };
+  open();window.addEventListener('hashchange',open);return()=>{alive=false;window.removeEventListener('hashchange',open);};
+ },[owner]);
  async function search(e:FormEvent){
   e.preventDefault();if(locked.current)return;const term=query.trim().toLowerCase();
   if(!/^[a-z0-9_]{3,20}$/.test(term)){setNotice('Wpisz minimum 3 znaki nicku: litery, cyfry lub _.');return;}

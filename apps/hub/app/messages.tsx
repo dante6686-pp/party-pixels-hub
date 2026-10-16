@@ -1,10 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {avatars,getClient,type Profile} from '../lib/client';
+import ReportButton from './report-button';
 import {profileHref} from './profile-card';
 type Message={id:string;sender_id:string;body:string;created_at:string};
 type Conversation=Profile & {preview:string;unread:boolean};
-const errors:Record<string,string>={FRIENDS_ONLY:'Możesz pisać tylko do aktualnych znajomych.',PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',RATE_LIMIT:'Chwila przerwy — limit to 30 wiadomości na minutę.',INVALID_MESSAGE:'Wpisz od 1 do 2000 znaków.',DUPLICATE_CONFLICT:'Nie udało się ponowić tej wiadomości.'};
+const errors:Record<string,string>={CONTACT_UNAVAILABLE:'Kontakt z tym graczem jest niedostępny.',FRIENDS_ONLY:'Możesz pisać tylko do aktualnych znajomych.',PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',RATE_LIMIT:'Chwila przerwy — limit to 30 wiadomości na minutę.',INVALID_MESSAGE:'Wpisz od 1 do 2000 znaków.',DUPLICATE_CONFLICT:'Nie udało się ponowić tej wiadomości.'};
 async function api(owner:string,action:string,extra:Record<string,unknown>={}){
  const client=getClient();if(!client)throw new Error('Brak połączenia.');
  const {data,error}=await client.rpc('pp_messages',{p_owner:owner,p_action:action,...extra}).abortSignal(AbortSignal.timeout(12000));
@@ -70,9 +71,9 @@ function Thread({owner,peer,onRead,onClose,active}:{owner:string;peer:Profile;ac
  return <div className="message-thread"><div className="friends-heading"><h3><a className="thread-profile-link" href={profileHref(peer.handle)}>{avatars[peer.avatar_key]} {peer.display_name} <small>@{peer.handle} · Zobacz profil ↗</small></a></h3><button onClick={onClose}>Zamknij</button></div>
  <div className="message-history" ref={scroll} onScroll={()=>{const el=scroll.current;if(el)nearBottom.current=el.scrollHeight-el.scrollTop-el.clientHeight<80;}}>
  {more&&<button disabled={olderBusy} onClick={()=>void older()}>{olderBusy?'Wczytuję…':'Starsze wiadomości'}</button>}
- {!loaded?<p>Wczytuję rozmowę…</p>:!messages.length?<p className="muted">Napisz pierwsze „cześć” 👋</p>:messages.map(m=><article className={m.sender_id===owner?'message own':'message'} key={m.id}><small>{m.sender_id===owner?'Ty':<a href={profileHref(peer.handle)}>{peer.display_name}</a>} · {new Date(m.created_at).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small><p>{m.body}</p></article>)}
+ {!loaded?<p>Wczytuję rozmowę…</p>:!messages.length?<p className="muted">Napisz pierwsze „cześć” 👋</p>:messages.map(m=><article className={m.sender_id===owner?'message own':'message'} key={m.id}><small>{m.sender_id===owner?'Ty':<a href={profileHref(peer.handle)}>{peer.display_name}</a>} · {new Date(m.created_at).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small><p>{m.body}</p>{m.sender_id!==owner&&<ReportButton owner={owner} peer={peer.player_id} message={m.id}/>}</article>)}
  </div><p role="status" aria-live="polite">{notice}</p>
- {loaded&&!canSend&&<p>Nie jesteście już znajomymi. Historia pozostaje dostępna, ale wysyłanie jest wyłączone.</p>}
+ {loaded&&!canSend&&<p>Wysyłanie do tej osoby jest niedostępne. Historia rozmowy pozostaje dostępna.</p>}
  <form onSubmit={send}><label htmlFor="message-body">Twoja wiadomość</label><textarea id="message-body" value={pending?.body??body} disabled={busy||!!pending||!canSend} onChange={e=>setBody(e.target.value)} maxLength={2000} rows={3} placeholder="Napisz coś…" required/><small>{(pending?.body??body).length}/2000 · Enter: nowy wiersz</small><button type="submit" disabled={busy||!canSend||!(pending?.body??body).trim()}>{busy?'Wysyłam…':pending?'Ponów wysyłanie':'Wyślij'}</button></form>
  <small>Nowe wiadomości pojawiają się co kilka sekund. Niedokończona wiadomość pozostaje tylko w tym otwartym oknie rozmowy.</small>
  </div>;

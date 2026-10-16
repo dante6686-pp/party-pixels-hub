@@ -7,6 +7,7 @@ import Arcade from './arcade';
 import GameLibrary from './game-library';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
+import {BlockedPlayers} from './profile-actions';
 import ProfileCard,{banners,profileHref} from './profile-card';
 
 type View = 'games'|'library'|'friends'|'messages'|'profile';
@@ -19,7 +20,7 @@ export default function Home() {
   const [unread,setUnread]=useState(0);
   function navigate(next:View){window.location.hash=next;}
   useEffect(()=>{
-    const sync=()=>{const hash=window.location.hash.slice(1);if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){setView('games');setTimeout(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}),0);}};
+    const sync=()=>{const hash=window.location.hash.slice(1);if(/^chat\/[a-z0-9_]{3,20}$/.test(hash)){setView('messages');}else if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){setView('games');setTimeout(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}),0);}};
     sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
   },[]);
   useEffect(()=>{document.title=viewNames[view]+' · Party Pixels';},[view]);
@@ -185,6 +186,7 @@ export default function Home() {
       <div className="card-bottom"><span className="dot"/> JEDEN PROFIL. TWOJE PARTY PIXELS.</div>
     </section></div></div>
     <div hidden={view!=='library'&&view!=='profile'}>{ready?<PlayerLibrary key={user.id} owner={user.id} active={view==='library'||view==='profile'}/>:view==='library'&&<section className="social-gate"><span aria-hidden="true">▥</span><h1>Twoje gry, po Twojemu.</h1><p>Zaloguj się i zapisuj ulubione gry. Tutaj znajdziesz też ostatnie rozgrywki.</p><a href="#profile" className="primary">Przejdź do profilu ↗</a></section>}</div>
+    {ready&&view==='profile'&&<BlockedPlayers key={user.id} owner={user.id}/>}
     {ready?<Friends key={user.id} owner={user.id} view={view} onMessages={()=>navigate('messages')} onInvites={setInvites} onUnread={setUnread}/>:<div hidden={view!=='friends'&&view!=='messages'} className="social-gate"><span aria-hidden="true">{view==='friends'?'♧':'▤'}</span><h1>{view==='friends'?'Twoja ekipa czeka.':'Porozmawiajmy.'}</h1><p>{loading?'Sprawdzam Twoje konto…':user?'Zapisz profil, aby korzystać z funkcji społecznościowych.':'Zaloguj się, aby dodawać znajomych i wymieniać wiadomości.'}</p><a className="primary" href="#profile">Przejdź do profilu <span>↗</span></a></div>}
     <footer><span>© Party Pixels 2026</span><span>Made for good times.</span></footer>
     </div></div>
