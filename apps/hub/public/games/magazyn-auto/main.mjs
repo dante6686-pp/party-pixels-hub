@@ -8,7 +8,7 @@ const platform=connectPlatform({
  init(data){checkpoint=data.checkpoint;$('continue').hidden=!(checkpoint);$('platform-player').textContent=data.player?`${data.player.avatar} ${data.player.displayName}`:'Gość';},
  input(mode){document.documentElement.dataset.input=mode;clearInput();resize();},
  pause,resume,start,
- saved(status){const labels={cloud:'✓ Checkpoint zapisany na koncie.',device:'Checkpoint gościa zapisany na tym urządzeniu.',pending:'Zapis lokalny. Czekamy na synchronizację konta.',conflict:'Nowszy zapis na innym urządzeniu. Wczytaj zapis konta w hubie.',error:'Nie udało się zapisać checkpointu. Nie zamykaj gry.'};$('save-status').textContent=labels[status]||labels.error;$('save-status').classList.toggle('failed',status==='error'||status==='conflict');},
+ saved(status){const labels={ready:'Postęp zapisujemy w checkpointach.',cloud:'✓ Checkpoint zapisany na koncie.',device:'Checkpoint gościa zapisany na tym urządzeniu.',pending:'Zapis lokalny. Czekamy na synchronizację konta.',conflict:'Nowszy zapis na innym urządzeniu. Wczytaj zapis konta w hubie.',error:'Nie udało się zapisać checkpointu. Nie zamykaj gry.'};$('save-status').textContent=labels[status]||labels.error;$('save-status').classList.toggle('failed',status==='error'||status==='conflict');},
 });
 function save(data){checkpoint={mission:data.mission,cash:data.cash};platform.save(checkpoint);$('continue').hidden=!(checkpoint);}
 const audio={ctx:null,next:0,beat:0,engine:null,gain:null};

@@ -149,7 +149,7 @@ export default function GameHost() {
       };
       channel.port1.start();
       // An opaque target cannot be expressed as targetOrigin. Only the selected frame receives this port.
-      iframe.current?.contentWindow?.postMessage({type:'pp:init',protocol:PROTOCOL,build:GAME.build,player:player?{displayName:player.displayName,avatar:player.avatar}:null,checkpoint:initialSave.current,mode:modeRef.current,syncStatus:saves.current?.getStatus()},'*',[channel.port2]);
+      iframe.current?.contentWindow?.postMessage({type:'pp:init',protocol:PROTOCOL,build:GAME.build,player:player?{displayName:player.displayName,avatar:player.avatar}:null,checkpoint:initialSave.current,mode:modeRef.current,syncStatus:initialSave.current?saves.current?.getStatus():'ready'},'*',[channel.port2]);
       setReady(true);
     };
     window.addEventListener('message',receive);
@@ -173,7 +173,7 @@ export default function GameHost() {
   async function useCloud(){setSyncBusy(true);try{await saves.current?.useCloud();setAttempt(value=>value+1);}catch{setNotice('Nie udało się wczytać zapisu konta. Spróbuj ponownie.');}finally{setSyncBusy(false);}}
   const blocked=Boolean(error||identityError);
   const conflict=syncStatus==='conflict';
-  const syncLabel={loading:'Wczytuję zapis…',cloud:'✓ Zapis na koncie',device:'Zapis gościa · to urządzenie',pending:'Zapis lokalny · czeka na synchronizację',conflict:'Nowszy zapis na innym urządzeniu',error:'Nie potwierdzono zapisu'}[syncStatus];
+  const syncLabel={loading:'Wczytuję zapis…',cloud:hasSave?'✓ Zapis na koncie':'Konto gotowe do zapisu',device:'Zapis gościa · to urządzenie',pending:'Zapis lokalny · czeka na synchronizację',conflict:'Nowszy zapis na innym urządzeniu',error:'Nie potwierdzono zapisu'}[syncStatus];
   return <div className="game-shell" ref={shell} data-input={mode}>
     <div className="player-toolbar">
       <Link href="/#games" className="player-back" aria-label="Wróć do huba">← <span>Hub</span></Link>
