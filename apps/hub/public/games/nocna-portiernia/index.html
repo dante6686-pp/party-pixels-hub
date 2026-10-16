@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111c19"><title>Nocna portiernia — prototyp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="game" aria-label="Nocna portiernia">
+    <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <header class="hud"><div><span class="eyebrow">JESIONOWA 12 · PORTIERNIA</span><strong id="clock">03:00</strong></div><button id="pause" aria-label="Otwórz pauzę">Ⅱ <span>Pauza</span></button></header>
+    <div class="status"><span id="visit">PROTOTYP · 2 WIZYTY</span><span id="mistakes" aria-label="Brak naruszeń">● ● ●</span></div>
+    <div id="save-status" role="status"></div>
+    <section id="dialogue" class="dialogue" aria-live="polite"><span class="eyebrow">NOCNA ZMIANA</span><p>Za szybą ktoś czeka.</p></section>
+    <div id="controls" class="controls" hidden>
+      <p id="input-hint" class="hint">Przeciągnij widok, aby się rozejrzeć.</p>
+      <div class="tools"><button id="card">Karta mieszkańca</button><button id="register">Spis lokatorów</button></div>
+      <p id="tutorial" class="hint">Obejrzyj kartę i spis, zanim podejmiesz decyzję.</p>
+      <div class="decisions"><button id="deny" class="deny" disabled>Odmów</button><button id="allow" class="allow" disabled>Wpuść</button></div>
+    </div>
+    <section id="inspection" class="inspection" role="dialog" aria-modal="true" aria-labelledby="inspection-title" hidden>
+      <header><div><span class="eyebrow">KONTROLA DOKUMENTÓW</span><h2 id="inspection-title">Porównaj dane i twarz</h2></div><button id="close-inspection" aria-label="Zamknij dokumenty">✕</button></header>
+      <div class="documents">
+        <article class="paper"><span class="stamp">JESIONOWA 12</span><h3>Karta mieszkańca</h3><div id="card-content"></div></article>
+        <article class="paper"><span class="stamp">SPIS AKTUALNY</span><h3>Lokatorzy</h3><label for="resident-select">Wybierz wpis do porównania</label><select id="resident-select"></select><div id="resident-content"></div></article>
+      </div>
+      <button id="look" class="look">Spójrz na gościa</button>
+      <p class="inspection-note">Nazwisko, mieszkanie i twarz muszą zgadzać się z tym samym wpisem.</p>
+    </section>
+    <section id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Menu gry"><div class="panel" id="panel"></div></section>
+    <div id="fatal" class="overlay" hidden><div class="panel"><span class="eyebrow">GRAFIKA 3D NIEDOSTĘPNA</span><h1>Nie udało się otworzyć portierni</h1><p id="fatal-detail">Ta przeglądarka nie udostępnia WebGL. Sprawdź akcelerację sprzętową lub otwórz grę w innej przeglądarce.</p><button onclick="location.reload()">Spróbuj ponownie</button></div></div>
+  </main>
+  <script type="module" src="main.mjs"></script>
+</body></html>
