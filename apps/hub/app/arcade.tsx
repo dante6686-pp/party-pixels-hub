@@ -9,7 +9,7 @@ type Best={game_id:GameId;value:number;unit:string;attempts:number;verification_
 type Pending={sessionId:string;requestId:string;result:Record<string,unknown>};
 type Rank={player_id:string;value:number;handle:string};
 const titles:Record<GameId,string>={'quick-math':'Szybka piątka','two-seconds':'Złap 2 sekundy'};
-export default function Arcade({profile}:{profile:Profile}) {
+export default function Arcade({profile,gameId}:{profile:Profile;gameId:GameId}) {
   const [session,setSession]=useState<Session|null>(null);
   const [pending,setPending]=useState<Pending|null>(null);
   const [bests,setBests]=useState<Best[]>([]);
@@ -86,18 +86,22 @@ export default function Arcade({profile}:{profile:Profile}) {
     if(value>10000){setSession(null);setMessage('Za długa przerwa. Rozpocznij kolejną rundę.');return;}
     void submit({sessionId:session.sessionId,requestId:crypto.randomUUID(),result:{value}});
   }
-  return <section className="arcade" aria-label="Gry testowe i rekordy">
-    <div className="arcade-title"><div><p className="eyebrow">PIERWSZE ROZGRYWKI</p><h2>{sdk.player.get().avatar} Gramy, {sdk.player.get().displayName}?</h2></div><span className="dev-label">TEST INTEGRACJI</span></div>
-    <p className="muted">Dwie małe gry, jedno konto. Rekordy zapisujemy osobno — punktów nie dodajemy do milisekund.</p>
-    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=>{const best=bests.find(b=>b.game_id===id);return <article id={'arcade-'+id} key={id} className="game-card"><span className="game-symbol" aria-hidden="true">{id==='quick-math'?'＋':'◷'}</span><h3>{titles[id]}</h3><FavoriteButton owner={profile.player_id} game={id} title={titles[id]}/><p>{id==='quick-math'?'Pięć działań. Ile rozwiążesz poprawnie?':'Uruchom stoper i zatrzymaj go po dwóch sekundach. Bez podglądania.'}</p><p className="best">{best?`Rekord: ${best.value}${id==='quick-math'?' / 5 pkt':' ms błędu'} · prób: ${best.attempts}`:'Jeszcze bez rekordu'}</p><small>{id==='quick-math'?'Odpowiedzi sprawdza serwer.':'Czas deklaruje przeglądarka — wynik niezweryfikowany.'}</small><button className="primary" onClick={()=>void begin(id)} disabled={busy||!!session||!!pending}>Zagraj <span>→</span></button></article>;})}</div>
+  useEffect(()=>{
+    const hidden=()=>{if(document.hidden&&running){setRunning(false);setSession(null);setMessage('Runda przerwana po opuszczeniu gry. Zacznij nową próbę.');}};
+    document.addEventListener('visibilitychange',hidden);return()=>document.removeEventListener('visibilitychange',hidden);
+  },[running]);
+  return <section className="arcade native-arcade" aria-label={'Gra '+titles[gameId]}>
+    <div className="arcade-title"><div><p className="eyebrow">TWOJA ROZGRYWKA</p><h1>{titles[gameId]}</h1></div><span className="dev-label">{sdk.player.get().avatar} @{profile.handle}</span></div>
+
+    <div className="game-grid">{([gameId] as GameId[]).map(id=>{const best=bests.find(b=>b.game_id===id);return <article id={'arcade-'+id} key={id} className="game-card"><span className="game-symbol" aria-hidden="true">{id==='quick-math'?'＋':'◷'}</span><h3>{titles[id]}</h3><FavoriteButton owner={profile.player_id} game={id} title={titles[id]}/><p>{id==='quick-math'?'Pięć działań. Ile rozwiążesz poprawnie?':'Uruchom stoper i zatrzymaj go po dwóch sekundach. Bez podglądania.'}</p><p className="best">{best?`Rekord: ${best.value}${id==='quick-math'?' / 5 pkt':' ms błędu'} · prób: ${best.attempts}`:'Jeszcze bez rekordu'}</p><small>{id==='quick-math'?'Odpowiedzi sprawdza serwer.':'Czas deklaruje przeglądarka — wynik niezweryfikowany.'}</small><button className="primary" onClick={()=>void begin(id)} disabled={busy||!!session||!!pending}>Rozpocznij rundę <span>→</span></button></article>;})}</div>
     {session&&<div className="round"><h3>{titles[session.gameId]}</h3><p className="muted">Gracz: @{sdk.player.get().handle}</p>
       {session.gameId==='quick-math'&&Array.isArray(session.challenge)?<form onSubmit={answer}><fieldset disabled={busy||!!pending}>{session.challenge.map((q,i)=><div className="math-row" key={i}><label htmlFor={'answer'+i}>{q.a} + {q.b} =</label><input id={'answer'+i} name={'answer'+i} type="number" inputMode="numeric" min="0" max="999" step="1" required/></div>)}<button className="primary" type="submit">{busy?'Zapisuję…':'Sprawdź odpowiedzi'}</button></fieldset></form>:<button className="clock-button" onClick={clock} disabled={busy||!!pending}>{running?'STOP':'START'}</button>}
       {!pending&&<button className="text-button" disabled={busy} onClick={()=>{setSession(null);setRunning(false);}}>Opuść rundę</button>}
     </div>}
-    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=><section className="game-card" key={id} aria-label={'Ranking '+titles[id]}><h3>{titles[id]} — top 5</h3>{rankings[id].length?<ol>{rankings[id].map((row,i,all)=>{const first=all.findIndex(r=>r.value===row.value)+1;return <li key={row.player_id} value={first}><a href={profileHref(row.handle)}>@{row.handle}</a> · {row.value}{id==='quick-math'?' pkt':' ms błędu'}</li>;})}</ol>:<p>Jeszcze bez wyników.</p>}<small>{id==='quick-math'?'Więcej punktów = lepszy wynik.':'Mniejszy błąd = lepszy wynik. Ranking niezweryfikowany.'}</small></section>)}</div>
+    <div className="game-grid">{([gameId] as GameId[]).map(id=><section className="game-card" key={id} aria-label={'Ranking '+titles[id]}><h3>{titles[id]} — top 5</h3>{rankings[id].length?<ol>{rankings[id].map((row,i,all)=>{const first=all.findIndex(r=>r.value===row.value)+1;return <li key={row.player_id} value={first}><a href={profileHref(row.handle)}>@{row.handle}</a> · {row.value}{id==='quick-math'?' pkt':' ms błędu'}</li>;})}</ol>:<p>Jeszcze bez wyników.</p>}<small>{id==='quick-math'?'Więcej punktów = lepszy wynik.':'Mniejszy błąd = lepszy wynik. Ranking niezweryfikowany.'}</small></section>)}</div>
     {receipt&&<p className="score-receipt">{receipt.gameId==='quick-math'?`${receipt.value} / 5 poprawnych odpowiedzi`:`${receipt.value} ms od celu`} · {receipt.verificationStatus==='validated'?'odpowiedzi sprawdzone':'czas niezweryfikowany'}</p>}
     {message&&<p className="notice" role="status">{message}</p>}
     {pending&&<><button className="primary" disabled={busy} onClick={()=>void submit(pending)}>{busy?'Zapisuję…':'Ponów zapis tego wyniku'}</button><button className="text-button" disabled={busy} onClick={()=>{setPending(null);setSession(null);setMessage('Opuściłeś próbę. Wynik bez potwierdzenia nie jest oznaczony jako zapisany.');}}>Opuść próbę</button></>}
-    <small>To gry techniczne do sprawdzenia wspólnego profilu i wyników. Bez nagród i XP. Niezapisana próba nie przetrwa zamknięcia strony.</small>
+    <small>Wynik zapisujemy na Twoim koncie po zakończeniu rundy. Niezapisana próba nie przetrwa zamknięcia strony.</small>
   </section>;
 }

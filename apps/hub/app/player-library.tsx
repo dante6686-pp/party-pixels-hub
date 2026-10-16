@@ -6,8 +6,8 @@ type Entry={game_id:LibraryGame;favorite:boolean;last_played_at:string|null};
 type Library={games:Entry[];checkpoint:{mission:number;updated_at:string}|null};
 const catalog=[
  {id:'magazyn-auto',title:'MAGAZYN AUTO',symbol:'▰',detail:'3D · Kampania solo',href:'/play/magazyn-auto'},
- {id:'quick-math',title:'Szybka piątka',symbol:'＋',detail:'Pięć działań · Rekordy',href:'#arcade-quick-math'},
- {id:'two-seconds',title:'Złap 2 sekundy',symbol:'◷',detail:'Refleks · Rekordy',href:'#arcade-two-seconds'},
+ {id:'quick-math',title:'Szybka piątka',symbol:'＋',detail:'Pięć działań · Rekordy',href:'/play/quick-math'},
+ {id:'two-seconds',title:'Złap 2 sekundy',symbol:'◷',detail:'Refleks · Rekordy',href:'/play/two-seconds'},
 ] as const;
 export default function PlayerLibrary({owner,active}:{owner:string;active:boolean}){
  const [data,setData]=useState<Library|null>(null),[filter,setFilter]=useState<'favorites'|'recent'>('favorites'),[notice,setNotice]=useState(''),[busy,setBusy]=useState<LibraryGame|null>(null);

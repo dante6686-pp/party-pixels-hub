@@ -10,3 +10,7 @@ test('catalog combines search, category, graphics and supported mode',()=>{
  assert.equal(filterGames('MAGAZYN','2d','solo','all').length,0);
  assert.equal(new Set(games.map(g=>g.id)).size,games.length);
 });
+
+test('each catalog play action opens its dedicated game route',()=>{
+ for(const game of games){assert.equal(game.play,'/play/'+game.id);assert.equal(game.play.includes('#'),false);}
+});

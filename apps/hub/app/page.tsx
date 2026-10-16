@@ -3,7 +3,6 @@
 import {useEffect, useState, type FormEvent} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {getClient, avatars, type Profile} from '../lib/client';
-import Arcade from './arcade';
 import GameLibrary from './game-library';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
@@ -20,7 +19,7 @@ export default function Home() {
   const [unread,setUnread]=useState(0);
   function navigate(next:View){window.location.hash=next;}
   useEffect(()=>{
-    const sync=()=>{const hash=window.location.hash.slice(1);if(/^chat\/[a-z0-9_]{3,20}$/.test(hash)){setView('messages');}else if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){setView('games');setTimeout(()=>document.getElementById(hash)?.scrollIntoView({block:'start'}),0);}};
+    const sync=()=>{const hash=window.location.hash.slice(1);if(/^chat\/[a-z0-9_]{3,20}$/.test(hash)){setView('messages');}else if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){window.location.replace('/play/'+hash.slice(7));}};
     sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
   },[]);
   useEffect(()=>{document.title=viewNames[view]+' · Party Pixels';},[view]);
@@ -155,7 +154,7 @@ export default function Home() {
     </aside>
     <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games">✳ party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></header>
     <div id="hub-content" className="hub-content">
-    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section><GameLibrary owner={ready?user.id:undefined}/>{ready?<Arcade key={user.id} profile={profile}/>:<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
+    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section><GameLibrary owner={ready?user.id:undefined}/>{!ready&&<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
     <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>
