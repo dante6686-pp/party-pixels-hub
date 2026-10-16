@@ -18,15 +18,15 @@
     </section>
     <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy">Za szybą ktoś czeka.</p><button id="dialog-expand" hidden>Cały dialog</button></section>
     <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
-      <nav class="tools" aria-label="Dokumenty i instrukcja"><button id="card" aria-controls="inspection" aria-pressed="true">Karta</button><button id="register" aria-controls="inspection" aria-pressed="false">Porównaj ze spisem</button><button id="instructions" aria-label="Instrukcja">?</button><button id="look" aria-label="Spójrz na gościa" title="Spójrz na gościa">↑</button></nav>
+      <nav class="tools" aria-label="Dokumenty i instrukcja"><button id="card" aria-controls="inspection" aria-pressed="true">Informacje</button><button id="register" aria-controls="inspection" aria-pressed="false">Porównaj ze spisem</button><button id="instructions" aria-label="Instrukcja">?</button><button id="look" aria-label="Spójrz na gościa" title="Spójrz na gościa">↑</button></nav>
       <section id="inspection" class="inspection" aria-label="Dokumenty do porównania" hidden>
         <div id="register-picker" class="picker" hidden><label for="resident-select">Spis</label><select id="resident-select"></select></div>
         <div id="documents" class="documents">
-          <article id="card-sheet" class="paper"><h2>Karta mieszkańca</h2><div id="card-content"></div></article>
-          <article id="resident-sheet" class="paper" hidden><h2>Wpis w spisie</h2><div id="resident-content"></div></article>
+          <article id="card-sheet" class="paper"><h2>Podane informacje</h2><p class="source-note">Informacje przekazane przez osobę przy okienku</p><div id="card-content"></div></article>
+          <article id="resident-sheet" class="paper" hidden><h2>Karta lokatora</h2><div id="resident-content"></div></article>
         </div>
       </section>
-      <p id="tutorial" class="hint" role="status">Obejrzyj kartę i porównaj ją ze spisem.</p>
+      <p id="tutorial" class="hint" role="status">Porównaj podane informacje z wpisem w spisie i twarzą gościa.</p>
       <div class="decisions"><button id="deny" class="deny" disabled>Odmów</button><button id="allow" class="allow" disabled>Wpuść</button></div>
     </section>
     <section id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Menu gry"><div class="panel" id="panel"></div></section>

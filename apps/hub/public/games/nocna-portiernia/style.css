@@ -7,3 +7,5 @@
 @media(prefers-reduced-motion:reduce){button:active:not(:disabled){transform:none}}
 
 @media(max-height:620px) and (orientation:portrait){#game{grid-template-rows:auto minmax(96px,1fr) auto auto}.documents{max-height:max(70px,calc(100dvh - 440px))}.dialogue{padding:6px 12px}.gesture-hint{display:none}}
+
+.source-note{font-size:11px;line-height:1.3;color:#3d4a35;margin:0 0 6px}.photo-label{display:block;max-width:90px;font-size:10px;line-height:1.2;padding:3px;color:#e7eddf;white-space:normal}.empty-resident{font-size:14px;line-height:1.4;padding:8px 0;min-height:96px;color:#263321}.empty-resident strong{font-size:16px}.empty-resident p{margin:6px 0}.compare .photo-label{max-width:58px}

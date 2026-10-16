@@ -1,5 +1,6 @@
 import * as THREE from '../magazyn-auto/vendor/three.module.js';
 import { residents } from './scenario.mjs';
+import { createCameraSway } from './camera-sway.mjs';
 
 // Deliberately procedural: no network, model downloads or AI calls at runtime.
 const materials = new Map();
@@ -92,7 +93,7 @@ export function createScene(container,onInspect,onContextLost){
   container.append(renderer.domElement);
   const visitor=new THREE.Group();visitor.position.set(0,0,-1.1);scene.add(visitor);
   let yaw=0,pitch=0,basePitch=0,gesture=null,dragged=false,time=0,last=0,paused=true,departing=false,approach=0,flash=0,allowFlash=false,dirty=true;
-  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2(),sway=createCameraSway({enabled:false});
   function resize(){gesture=null;dirty=true;const r=container.getBoundingClientRect();if(!r.width||!r.height)return;const frame=cameraFrame(r.width,r.height,window.innerWidth<window.innerHeight);camera.aspect=r.width/r.height;camera.fov=frame.fov;camera.position.set(0,frame.y,frame.z);basePitch=frame.pitch;camera.updateProjectionMatrix();renderer.setSize(r.width,r.height,false);}
   resize();const observer=new ResizeObserver(resize);observer.observe(container);
   container.addEventListener('pointerdown',e=>{if(paused||gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY};dragged=false;container.setPointerCapture(e.pointerId);});
@@ -100,7 +101,7 @@ export function createScene(container,onInspect,onContextLost){
   container.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;const click=!dragged;gesture=null;if(!click||paused)return;const r=container.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects([card,register])[0];if(hit)onInspect(hit.object.userData.inspect);});
   for(const type of ['pointercancel','lostpointercapture'])container.addEventListener(type,()=>{gesture=null;});
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;onContextLost();});
-  function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.05);last=now;if(paused&&!dirty)return;if(!paused){time+=dt;approach=Math.min(1,approach+dt*.85);visitor.position.z=departing?-1.1-time*1.2:-1.1-(1-approach)*2.8;visitor.position.x=departing?time*.65:0;visitor.rotation.y=departing?.7:Math.sin(time*.55)*.035;if(flash>0)flash=Math.max(0,flash-dt);}fluorescent.intensity=flash>0&&allowFlash?(Math.sin(flash*28)>0?3:7):7;camera.rotation.order='YXZ';camera.rotation.set(basePitch+pitch,yaw,0);renderer.render(scene,camera);dirty=false;}
+  function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.05);last=now;if(paused&&!dirty)return;if(!paused){time+=dt;approach=Math.min(1,approach+dt*.85);visitor.position.z=departing?-1.1-time*1.2:-1.1-(1-approach)*2.8;visitor.position.x=departing?time*.65:0;visitor.rotation.y=departing?.7:Math.sin(time*.55)*.035;if(flash>0)flash=Math.max(0,flash-dt);}fluorescent.intensity=flash>0&&allowFlash?(Math.sin(flash*28)>0?3:7):7;camera.rotation.order='YXZ';const drift=sway.update(dt,paused);camera.rotation.set(basePitch+pitch+drift.pitch,yaw+drift.yaw,drift.roll);renderer.render(scene,camera);dirty=false;}
   requestAnimationFrame(animate);
-  return {portraits,show(id){visitor.clear();visitor.add(makePerson(id));time=0;approach=0;departing=false;yaw=0;pitch=0;dirty=true;},depart(){departing=true;time=0;},pause(value){paused=value;gesture=null;dirty=true;},center(){yaw=0;pitch=0;dirty=true;},flicker(enabled){allowFlash=enabled;flash=.35;},rattle(){handle.rotation.x=-.35;dirty=true;},dispose(){observer.disconnect();renderer.dispose();}};
+  return {portraits,setSwayEnabled(value){sway.setEnabled(value);dirty=true;},setReading(value){sway.setReading(value);},show(id){visitor.clear();visitor.add(makePerson(id));time=0;approach=0;departing=false;yaw=0;pitch=0;dirty=true;},depart(){departing=true;time=0;},pause(value){paused=value;gesture=null;dirty=true;},center(){yaw=0;pitch=0;dirty=true;},flicker(enabled){allowFlash=enabled;flash=.35;},rattle(){handle.rotation.x=-.35;dirty=true;},dispose(){observer.disconnect();renderer.dispose();}};
 }

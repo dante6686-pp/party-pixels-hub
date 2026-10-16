@@ -12,9 +12,12 @@ test('default camera keeps all six heads and hairstyles inside the scene at mobi
     for(const r of residents){
       const model=makePerson(r.id),head=new THREE.Box3();
       for(const mesh of model.children)if(mesh.position.y>1.3)head.union(new THREE.Box3().setFromObject(mesh));
+      for(const sign of [-1,0,1]){
+      camera.rotation.set(f.pitch+sign*.20*Math.PI/180,sign*.25*Math.PI/180,sign*.06*Math.PI/180);camera.updateMatrixWorld();
       for(const x of [head.min.x,head.max.x])for(const y of [head.min.y,head.max.y])for(const z of [head.min.z,head.max.z]){
         const p=new THREE.Vector3(x,y,z-1.1).project(camera);
         assert.ok(Math.abs(p.x)<.92&&Math.abs(p.y)<.92,`${r.id} cropped at ${w}×${h}: ${p.x}, ${p.y}`);
+      }
       }
     }
   }
