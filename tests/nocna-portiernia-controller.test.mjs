@@ -26,7 +26,7 @@ function harness({brokenStorage=false}={}){
   const document={getElementById:get,querySelectorAll:()=>[get('sheet-card'),get('sheet-register')],addEventListener:(name,fn)=>events.set(name,fn),hidden:false,activeElement:null};
   const window={addEventListener:(name,fn)=>events.set(name,fn)};window.parent=window;
   const storage=new Map();
-  const renderer={portraits:Object.fromEntries(residents.map(r=>[r.id,'data:image/png;base64,test'])),show(){},center(){},pause(){},depart(){},flicker(){}};
+  const renderer={portraits:Object.fromEntries(residents.map(r=>[r.id,'data:image/png;base64,test'])),show(){},center(){},pause(){},depart(){},flicker(){},rattle(){}};
   const context=vm.createContext({document,window,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>{if(brokenStorage)throw Error('QUOTA');storage.set(k,v);}},
     createScene:()=>renderer,createAudio:()=>({pause(){},resume(){},enabled(){},cue(){}}),residents,visits,PROTOTYPE_LIMIT,initialState,decide,validCheckpoint,structuredClone,console,
     IntersectionObserver:class{observe(){}},requestAnimationFrame:fn=>frames.push(fn)});

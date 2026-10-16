@@ -116,7 +116,7 @@ function tick(now){
   const dt=Math.min((now-last)/1000||0,.05);last=now;
   if(phase==='transition'&&!paused&&transition){
     transition.remaining-=dt;
-    if(!transition.reacted&&transition.remaining<.6){transition.reacted=true;if(!transition.correct){audio.cue('door');$('dialogue').innerHTML=`<span class="eyebrow">NARUSZENIE PROCEDURY: ${state.mistakes}/3</span><p>[Pojedyncze uderzenie w rurę]</p>`;}else if(transition.index===1){audio.cue('error');scene.flicker(flashes);$('dialogue').innerHTML='<span class="eyebrow">PRZEDSIONEK</span><p>[Krótki trzask świetlówki]</p>';}}
+    if(!transition.reacted&&transition.remaining<.6){transition.reacted=true;if(!transition.correct){audio.cue('door');if(state.mistakes===2)scene.rattle();$('dialogue').innerHTML=`<span class="eyebrow">NARUSZENIE PROCEDURY: ${state.mistakes}/3</span><p>${state.mistakes===1?'[Pojedyncze uderzenie w rurę]':'[Klamka drzwi portierni porusza się]'}</p>`;}else if(transition.index===1){audio.cue('error');scene.flicker(flashes);$('dialogue').innerHTML='<span class="eyebrow">PRZEDSIONEK</span><p>[Krótki trzask świetlówki]</p>';}}
     if(transition.remaining<=0){transition=null;save();if(state.ending)summary();else beginVisit();}
   }
   requestAnimationFrame(tick);

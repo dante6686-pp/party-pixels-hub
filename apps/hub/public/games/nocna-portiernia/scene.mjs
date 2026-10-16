@@ -70,7 +70,7 @@ export function createScene(container,onInspect,onContextLost){
   box(scene,2.75,.1,1.22,0,.72,1.05,'#706448');box(scene,2.7,.6,.1,0,.36,1.55,'#3f4938');
   box(scene,.9,.05,.22,0,2.74,.5,'#dce7be');
   const door=new THREE.Group();door.position.set(2,0,1.15);scene.add(door);
-  box(door,.12,2.3,1,0,1.1,0,'#303f33');box(door,.06,.035,.2,-.11,1.03,.24,'#a6ad8f');
+  box(door,.12,2.3,1,0,1.1,0,'#303f33');const handle=box(door,.06,.035,.2,-.11,1.03,.24,'#a6ad8f');
   // Desk objects are raycast targets, also available as explicit UI buttons.
   const register=box(scene,.48,.025,.55,-.78,.79,1.16,'#b8baa0');register.rotation.y=.13;register.userData.inspect='register';
   for(let i=0;i<6;i++)box(scene,.3,.003,.012,-.78,.806,.99+i*.055,'#7c846d');
@@ -96,5 +96,5 @@ export function createScene(container,onInspect,onContextLost){
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;onContextLost();});
   function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.05);last=now;if(paused&&!dirty)return;if(!paused){time+=dt;approach=Math.min(1,approach+dt*.85);visitor.position.z=departing?-1.1-time*1.2:-1.1-(1-approach)*2.8;visitor.position.x=departing?time*.65:0;visitor.rotation.y=departing?.7:Math.sin(time*.55)*.035;if(flash>0)flash=Math.max(0,flash-dt);}fluorescent.intensity=flash>0&&allowFlash?(Math.sin(flash*28)>0?9:20):20;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);renderer.render(scene,camera);dirty=false;}
   requestAnimationFrame(animate);
-  return {portraits,show(id){visitor.clear();visitor.add(makePerson(id));time=0;approach=0;departing=false;yaw=0;pitch=0;dirty=true;},depart(){departing=true;time=0;},pause(value){paused=value;gesture=null;dirty=true;},center(){yaw=0;pitch=0;dirty=true;},flicker(enabled){allowFlash=enabled;flash=.35;},dispose(){observer.disconnect();renderer.dispose();}};
+  return {portraits,show(id){visitor.clear();visitor.add(makePerson(id));time=0;approach=0;departing=false;yaw=0;pitch=0;dirty=true;},depart(){departing=true;time=0;},pause(value){paused=value;gesture=null;dirty=true;},center(){yaw=0;pitch=0;dirty=true;},flicker(enabled){allowFlash=enabled;flash=.35;},rattle(){handle.rotation.x=-.35;dirty=true;},dispose(){observer.disconnect();renderer.dispose();}};
 }
