@@ -6,15 +6,15 @@ import { requestDefaultFullscreen } from './fullscreen.mjs';
 
 const $=id=>document.getElementById(id),KEY='pp:nocna-portiernia:prototype-a:guest:v1';
 const audio=createAudio();let scene;
-let state=initialState(),saved=null,phase='menu',paused=false,selectedResidentId=null,seen={card:false,register:false},overlayKind='menu',transition=null;
+let state=initialState(),saved=null,phase='menu',paused=false,seen={card:false,register:false},overlayKind='menu',transition=null;
 const motionPreference=window.matchMedia?.('(prefers-reduced-motion: reduce)');
 let swayEnabled=!(motionPreference?.matches??false),swayManual=false;
 const ARRIVAL_SECONDS=1.35,INFORMATION_DELAY=1,FADE_SECONDS=1.1;
 let entrance=null,uiShown=false;
-let sound=true,flashes=false,inspectionOpen=false,panelMode='card',currentDialogue='',saveError='',saveTTL=0,hintTTL=9,fullscreenExited=false;
+let sound=true,flashes=false,inspectionOpen=false,currentDialogue='',saveError='',saveTTL=0,hintTTL=9,fullscreenExited=false;
 motionPreference?.addEventListener('change',e=>{if(!swayManual){swayEnabled=!e.matches;scene?.setSwayEnabled(swayEnabled);const control=$('sway');if(control)control.checked=swayEnabled;}});
 function fatal(message){audio.pause();scene?.pause(true);$('fatal').hidden=false;if(message)$('fatal-detail').textContent=message;}
-try{scene=createScene($('scene'),inspect,()=>fatal('Utracono dostęp do grafiki 3D. Odśwież grę. Ostatni zakończony fragment pozostaje w lokalnym zapisie.'));scene.setSwayEnabled(swayEnabled);}catch(error){fatal();console.error('Nocna portiernia: renderer unavailable',error);}
+try{scene=createScene($('scene'),()=>{},()=>fatal('Utracono dostęp do grafiki 3D. Odśwież grę. Ostatni zakończony fragment pozostaje w lokalnym zapisie.'));scene.setSwayEnabled(swayEnabled);}catch(error){fatal();console.error('Nocna portiernia: renderer unavailable',error);}
 
 function saveNotice(message,error=false){saveError=error?message:'';saveTTL=error?0:2.7;$('save-status').textContent=message;$('save-status').hidden=false;$('save-status').classList.toggle('error',error);}
 function load(){
@@ -45,8 +45,8 @@ function menu(){
 }
 function confirmNew(){modal('<span class="eyebrow">NOWA ZMIANA</span><h2>Zacząć od początku?</h2><p>Poprzedni lokalny zapis tego prototypu zostanie zastąpiony.</p><div class="stack"><button id="confirm-new" class="primary">Rozpocznij nową zmianę</button><button id="cancel-new">Zachowaj zapis</button></div>','confirm');$('confirm-new').onclick=()=>{startFullscreen();intro();};$('cancel-new').onclick=menu;}
 function intro(){
-  state=initialState();uiShown=false;entrance=null;setPresentation(false,false,false);save();phase='intro';audio.resume();
-  modal('<span class="eyebrow">WIADOMOŚĆ POPRZEDNIKA · JESIONOWA 12</span><h2>Po trzeciej<br>tylko lokatorzy.</h2><blockquote>„Porównaj nazwisko, mieszkanie i twarz. Spis jest aktualny. Zmiennik przyjdzie rano”.</blockquote><p>Porównaj podane informacje z wpisem w spisie i twarzą gościa. Wybierz „Porównaj ze spisem”, a potem samodzielnie odszukaj lokatora. Nie musisz się spieszyć.</p><button id="begin" class="primary">Odkładam wiadomość</button>','intro');
+  state=initialState();$('resident-carousel').scrollLeft=0;uiShown=false;entrance=null;setPresentation(false,false,false);save();phase='intro';audio.resume();
+  modal('<span class="eyebrow">WIADOMOŚĆ POPRZEDNIKA · JESIONOWA 12</span><h2>Po trzeciej<br>tylko lokatorzy.</h2><blockquote>„Porównaj nazwisko, mieszkanie i twarz. Spis jest aktualny. Zmiennik przyjdzie rano”.</blockquote><p>Porównaj podane informacje z wpisem w spisie i twarzą gościa. Przesuwaj karty mieszkańców i samodzielnie odszukaj lokatora. Nie musisz się spieszyć.</p><button id="begin" class="primary">Odkładam wiadomość</button>','intro');
   $('begin').onclick=beginVisit;
 }
 function syncScene(){scene?.pause(paused||!['arrival','speaking','revealing','playing','transition'].includes(phase));scene?.setReading(! $('overlay').hidden?'modal':inspectionOpen?'documents':false);}
@@ -58,10 +58,9 @@ function setPresentation(ui,dialogue,information){
   $('dialogue').setAttribute('aria-hidden',String(!dialogue));$('inspection').setAttribute('aria-hidden',String(!information));
 }
 function beginVisit(){
-  if(!scene)return;phase='arrival';paused=false;transition=null;entrance={elapsed:0};selectedResidentId=null;seen={card:false,register:false};inspectionOpen=false;hideModal();$('controls').hidden=false;
+  if(!scene)return;phase='arrival';paused=false;transition=null;entrance={elapsed:0};seen={card:false,register:false};inspectionOpen=false;hideModal();$('controls').hidden=false;
   // Clear old visitor data before starting the approach. Keep layout slots to prevent camera jumps.
-  $('card-content').innerHTML='';$('resident-content').innerHTML='';$('resident-select').innerHTML='<option value="" selected>Wybierz lokatora…</option>';
-  $('inspection').hidden=false;$('register-picker').hidden=$('resident-sheet').hidden=true;$('documents').classList.toggle('compare',false);
+  $('card-content').innerHTML='';$('inspection').hidden=false;
   setDialogue('');setPresentation(uiShown,false,false);
   scene.show(visits[state.nextVisitIndex].guest);scene.center();syncScene();audio.resume();audio.cue('step');hud();
 }
@@ -72,7 +71,7 @@ function updateEntrance(dt){
     entrance.elapsed-=ARRIVAL_SECONDS;phase='speaking';uiShown=true;
     setDialogue(`„${visits[state.nextVisitIndex].dialog}”`);setPresentation(true,true,false);hud();
   }else if(phase==='speaking'&&entrance.elapsed>=INFORMATION_DELAY){
-    entrance.elapsed-=INFORMATION_DELAY;phase='revealing';inspect('card',true);setPresentation(true,true,true);hud();
+    entrance.elapsed-=INFORMATION_DELAY;phase='revealing';showInformation();setPresentation(true,true,true);hud();
   }else if(phase==='revealing'&&entrance.elapsed>=FADE_SECONDS){
     entrance=null;phase='playing';hud();refreshVisibility();
   }
@@ -83,41 +82,53 @@ function hud(){
   $('mistakes').setAttribute('aria-label',`Naruszenia procedury: ${state.mistakes}/3`);
   const enabled=phase==='playing'&&!paused&&$('overlay').hidden&&(state.nextVisitIndex!==0||(seen.card&&seen.register));
   $('allow').disabled=$('deny').disabled=!enabled;
-  for(const id of ['card','register','look','instructions','resident-select'])$(id).disabled=phase!=='playing'||paused;
-  for(const button of $('inspection').querySelectorAll('[data-person]'))button.disabled=phase!=='playing'||paused;
-  $('card').setAttribute('aria-pressed',String(inspectionOpen&&panelMode==='card'));
-  $('register').setAttribute('aria-pressed',String(inspectionOpen&&panelMode==='compare'));
+  $('instructions').disabled=paused;
   const gate=phase==='playing'&&state.nextVisitIndex===0&&(!seen.card||!seen.register);
   $('tutorial').hidden=!gate;
-  $('tutorial').textContent=!seen.card?'Obejrzyj podane informacje, aby odblokować decyzję.':!selectedResidentId?'Wybierz lokatora ze spisu i obejrzyj jego wpis.':'Porównaj podane informacje z wpisem w spisie i twarzą gościa.';
+  $('tutorial').textContent=!seen.card?'Obejrzyj podane informacje, aby odblokować decyzję.':'Obejrzyj kartę mieszkańca poniżej i porównaj ją z informacjami gościa.';
   $('allow').setAttribute('aria-describedby',gate?'tutorial':'');$('deny').setAttribute('aria-describedby',gate?'tutorial':'');
 }
-function personHTML(id,name,flat,source){return `<div class="person"><button class="portrait-button" data-person="${id}" data-source="${source}" aria-label="Powiększ: ${source}"><img class="portrait" src="${scene.portraits[id]}" alt="${source}" width="90" height="110"><span class="photo-label">${source}</span></button><div class="identity"><strong>${name}</strong><div class="flat-line">Mieszkanie<span class="flat">${flat}</span></div></div></div>`;}
-function portraitEvents(){for(const button of $('inspection').querySelectorAll('[data-person]'))button.onclick=()=>portrait(button.dataset.person,button.dataset.source);}
-function updateResident(){const r=residents.find(r=>r.id===selectedResidentId);$('resident-content').innerHTML=r?personHTML(r.id,r.name,r.flat,'Zdjęcie ze spisu'):'<div class="empty-resident"><strong>Nie wybrano lokatora</strong><p>Wybierz osobę ze spisu, aby porównać dane.</p></div>';portraitEvents();refreshVisibility();}
-function inspect(kind,automatic=false){
-  if(!(phase==='playing'||(automatic&&phase==='revealing'))||paused||!$('overlay').hidden)return;
-  const v=visits[state.nextVisitIndex];panelMode=kind==='register'?'compare':'card';
+function personHTML(id,name,flat,source){return `<div class="person"><img class="portrait" src="${scene.portraits[id]}" alt="${source}" width="70" height="86" draggable="false"><div class="identity"><strong>${name}</strong><div class="flat-line">Mieszkanie <span class="flat">${flat}</span></div></div></div>`;}
+function buildCarousel(){
+  $('resident-carousel').innerHTML=residents.map((r,i)=>`<article id="resident-${r.id}" class="paper resident-card" aria-label="${i+1} z ${residents.length}: ${r.name}"><h3>JESIONOWA 12 · KARTA MIESZKAŃCA</h3>${personHTML(r.id,r.name,r.flat,'Zdjęcie ze spisu: '+r.name)}<span class="card-number">${i+1} / ${residents.length}</span></article>`).join('');
+}
+function showInformation(){
+  const v=visits[state.nextVisitIndex];
   $('card-content').innerHTML=personHTML(v.card,v.name,v.flat,'Przedstawione zdjęcie');
-  $('resident-select').innerHTML=`<option value="" ${selectedResidentId===null?'selected':''}>Wybierz lokatora…</option>`+residents.map(r=>`<option value="${r.id}" ${selectedResidentId===r.id?'selected':''}>${r.name} · ${r.flat}</option>`).join('');
-  inspectionOpen=true;$('inspection').hidden=false;$('register-picker').hidden=$('resident-sheet').hidden=panelMode!=='compare';
-  $('documents').classList.toggle('compare',panelMode==='compare');updateResident();syncScene();audio.cue('paper');hud();refreshVisibility();
+  inspectionOpen=true;syncScene();audio.cue('paper');
 }
-function closeInspection(){inspectionOpen=false;$('inspection').hidden=true;syncScene();hud();$('card').focus();}
-function portrait(id,source='Przedstawione zdjęcie'){
-  if(phase!=='playing'||paused)return;
-  modal(`<span class="eyebrow">POWIĘKSZENIE FOTOGRAFII</span><h2>${source}</h2><img class="portrait-large" src="${scene.portraits[id]}" alt="${source}"><button id="back-photo">Wróć do dokumentów</button>`,'portrait');$('back-photo').onclick=()=>{hideModal();$('card').focus();};
-}
-$('resident-select').onchange=e=>{selectedResidentId=residents.some(r=>r.id===e.target.value)?e.target.value:null;updateResident();hud();};
-// Count visible CONTENT, never the action that opened a panel. Refresh after overlays/resize.
-const viewed=new IntersectionObserver(entries=>{
+// These are visibility checks, never matching or selecting a resident on the player's behalf.
+function countViewed(kind,entries){
   if(!inspectionOpen||phase!=='playing'||paused||!$('overlay').hidden||document.hidden)return;
-  for(const e of entries){const kind=e.target.id==='card-content'?'card':'register';if(e.isIntersecting&&e.intersectionRatio>=.85&&(kind==='card'||(panelMode==='compare'&&selectedResidentId!==null)))seen[kind]=true;}hud();
-},{root:$('documents'),threshold:[.85]});
-function refreshVisibility(){requestAnimationFrame(()=>{for(const id of ['card-content','resident-content']){viewed.unobserve($(id));viewed.observe($(id));}});}
-$('card').onclick=()=>inspect('card');$('register').onclick=()=>inspect('register');
-$('look').onclick=()=>{closeInspection();scene.center();};
-$('instructions').onclick=()=>{modal('<span class="eyebrow">INSTRUKCJA</span><h2>Trzy reguły</h2><ol><li>Po 03:00 wpuszczamy tylko lokatorów.</li><li>Porównaj podane informacje z wpisem w spisie i twarzą gościa. Nazwisko i mieszkanie muszą odpowiadać temu samemu wpisowi.</li><li>Przedstawione zdjęcie oraz zdjęcie ze spisu muszą przedstawiać osobę przy okienku.</li></ol><p>Tab i Enter obsługują przyciski. Przeciągnij scenę palcem lub myszą. Nie ma limitu czasu.</p><button id="back-rules">Wróć do kontroli</button>','instruction');$('back-rules').onclick=hideModal;};
+  if(entries.some(e=>{
+    if(!e.isIntersecting)return false;
+    if(!e.rootBounds)return e.intersectionRatio>=.85;
+    const target=e.boundingClientRect,visible=e.intersectionRect;
+    return visible.width>=.85*Math.min(target.width,e.rootBounds.width)&&visible.height>=.85*Math.min(target.height,e.rootBounds.height);
+  }))seen[kind]=true;
+  hud();
+}
+const informationViewed=new IntersectionObserver(entries=>countViewed('card',entries),{root:$('inspection'),threshold:[0,.25,.5,.75,.85,1]});
+const residentsViewed=new IntersectionObserver(entries=>countViewed('register',entries),{root:$('resident-carousel'),threshold:[0,.25,.5,.75,.85,1]});
+function refreshVisibility(){requestAnimationFrame(()=>{
+  informationViewed.unobserve($('card-content'));informationViewed.observe($('card-content'));
+  for(const r of residents){const node=$('resident-'+r.id);residentsViewed.unobserve(node);residentsViewed.observe(node);}
+});}
+buildCarousel();
+const carousel=$('resident-carousel');
+let drag=null;
+carousel.addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+  e.preventDefault();
+  const left=e.key==='Home'?0:e.key==='End'?carousel.scrollWidth:carousel.scrollLeft+(e.key==='ArrowRight'?1:-1)*carousel.clientWidth*.88;
+  carousel.scrollTo({left,behavior:motionPreference?.matches?'instant':'smooth'});
+});
+// Touch/pen use native scrolling. Mouse dragging is separate from the scene's camera controls.
+carousel.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;drag={id:e.pointerId,x:e.clientX,left:carousel.scrollLeft};carousel.setPointerCapture(e.pointerId);carousel.classList.toggle('dragging',true);});
+carousel.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;carousel.scrollLeft=drag.left-(e.clientX-drag.x);});
+function endDrag(){drag=null;carousel.classList.toggle('dragging',false);}
+carousel.addEventListener('pointerup',endDrag);carousel.addEventListener('pointercancel',endDrag);carousel.addEventListener('lostpointercapture',endDrag);
+$('instructions').onclick=()=>{modal('<span class="eyebrow">INSTRUKCJA</span><h2>Trzy reguły</h2><ol><li>Po 03:00 wpuszczamy tylko lokatorów.</li><li>Porównaj podane informacje z wpisem w spisie i twarzą gościa. Nazwisko i mieszkanie muszą odpowiadać temu samemu wpisowi.</li><li>Przedstawione zdjęcie oraz zdjęcie ze spisu muszą przedstawiać osobę przy okienku.</li></ol><p>Przesuwaj karty mieszkańców palcem lub myszą. Po ustawieniu fokusu na karuzeli używaj strzałek ← →. Tab i Enter obsługują przyciski. Przeciągnij scenę palcem lub myszą. Nie ma limitu czasu.</p><button id="back-rules">Wróć do kontroli</button>','instruction');$('back-rules').onclick=hideModal;};
 $('dialog-expand').onclick=()=>{modal(`<span class="eyebrow">WYPOWIEDŹ</span><p>${currentDialogue}</p><button id="back-dialog">Wróć do kontroli</button>`,'dialogue');$('back-dialog').onclick=hideModal;};
 function makeDecision(allow){
   if(phase!=='playing'||paused||!$('overlay').hidden||$('allow').disabled)return;
@@ -142,8 +153,7 @@ window.addEventListener('keydown',e=>{
     if(root){const controls=[...root.querySelectorAll('button:not(:disabled),select,input,[tabindex="0"]')];const first=controls[0],last=controls.at(-1);if(e.shiftKey&&(document.activeElement===first||!root.contains(document.activeElement))){e.preventDefault();last?.focus();}else if(!e.shiftKey&&(document.activeElement===last||!root.contains(document.activeElement))){e.preventDefault();first?.focus();}}
   }
   if(e.key!=='Escape')return;e.preventDefault();
-  if(['portrait','instruction','dialogue'].includes(overlayKind)){hideModal();return;}
-  if(inspectionOpen&&!paused){closeInspection();return;}
+  if(['instruction','dialogue'].includes(overlayKind)){hideModal();return;}
   if(!paused)pause();
 });
 window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
