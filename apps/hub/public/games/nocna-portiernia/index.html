@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main id="game" aria-label="Nocna portiernia">
-    <header class="hud">
+  <main id="game" data-ui-visible="false" data-dialogue-visible="false" data-info-visible="false" aria-label="Nocna portiernia">
+    <header id="hud" class="hud" inert>
       <div class="statusbar"><span><strong id="clock">03:00</strong> · <span id="visit">Wizyta 1/2</span></span><span id="mistakes">Błędy 0/3</span><button id="pause" aria-label="Otwórz pauzę">Ⅱ</button></div>
       <p id="save-status" role="status" hidden></p>
     </header>
@@ -16,7 +16,7 @@
       <div class="vignette" aria-hidden="true"></div>
       <p id="input-hint" class="gesture-hint">Przeciągnij widok, aby się rozejrzeć.</p>
     </section>
-    <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy">Za szybą ktoś czeka.</p><button id="dialog-expand" hidden>Cały dialog</button></section>
+    <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy"></p><button id="dialog-expand" hidden>Cały dialog</button></section>
     <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
       <nav class="tools" aria-label="Dokumenty i instrukcja"><button id="card" aria-controls="inspection" aria-pressed="true">Informacje</button><button id="register" aria-controls="inspection" aria-pressed="false">Porównaj ze spisem</button><button id="instructions" aria-label="Instrukcja">?</button><button id="look" aria-label="Spójrz na gościa" title="Spójrz na gościa">↑</button></nav>
       <section id="inspection" class="inspection" aria-label="Dokumenty do porównania" hidden>

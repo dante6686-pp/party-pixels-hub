@@ -37,7 +37,7 @@ function harness({brokenStorage=false,reducedMotion=false}={}){
     photo(){vm.runInContext('portrait("jan")',context);},state:()=>vm.runInContext('state',context),
     advance(seconds){for(let i=0;i<seconds*60;i++){clock+=1000/60;const batch=frames.splice(0);for(const fn of batch)fn(clock);}}};
 }
-function start(h){h.click('new');h.click('begin');assert.equal(h.get('allow').disabled,true);assert.equal(h.get('inspection').hidden,false);}
+function start(h){h.click('new');h.click('begin');h.advance(3.6);assert.equal(h.get('allow').disabled,true);assert.equal(h.get('inspection').hidden,false);}
 function inspectBoth(h){h.visible('card');h.click('register');h.get('resident-select').onchange({target:{value:'jan'}});h.visible('register');}
 
 test('controller: opening hidden register does not count as viewing; actual comparison permits decisions without closing',()=>{
@@ -48,9 +48,9 @@ test('controller: opening hidden register does not count as viewing; actual comp
   assert.equal(h.get('inspection').hidden,false);assert.equal(h.pauses.at(-1),false);
   h.click('allow');assert.equal(h.state().nextVisitIndex,1);h.get('allow').onclick();assert.equal(h.state().nextVisitIndex,1);
   h.click('pause');h.advance(5);assert.equal(h.get('overlay').hidden,false);
-  h.click('resume');h.advance(4);assert.match(h.get('dialog-copy').textContent,/Siódemka/);assert.match(h.get('resident-content').innerHTML,/Nie wybrano lokatora/);assert.match(h.get('resident-select').innerHTML,/value="" selected/);
-  h.click('deny');h.advance(4);assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 2\/2/);
-  assert.equal(JSON.parse([...h.storage.values()][0]).ending,'prototype');h.click('menu');h.click('continue');assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 2\/2/);
+  h.click('resume');h.advance(7);assert.match(h.get('dialog-copy').textContent,/Siódemka/);assert.match(h.get('resident-content').innerHTML,/Nie wybrano lokatora/);assert.match(h.get('resident-select').innerHTML,/value="" selected/);
+  h.click('deny');h.advance(7);assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 2\/2/);
+  assert.equal(JSON.parse([...h.storage.values()][0]).ending,'prototype');h.click('menu');h.click('continue');h.advance(3.6);assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 2\/2/);
 });
 test('controller: selected resident survives tabs, guest view, photograph, resize and pause; modal blocks decisions',()=>{
   const h=harness();start(h);inspectBoth(h);h.get('resident-select').onchange({target:{value:'teresa'}});
@@ -63,22 +63,22 @@ test('controller: selected resident survives tabs, guest view, photograph, resiz
   h.events.get('keydown')({key:'Escape',preventDefault(){}});assert.match(h.get('panel').innerHTML,/Chwila ciszy/);
 });
 test('controller: errors count once, summary contains only played visits, restart requires confirmation',()=>{
-  const h=harness();start(h);inspectBoth(h);h.click('deny');h.get('deny').onclick();assert.equal(h.state().mistakes,1);h.advance(4);
-  h.click('allow');h.advance(4);assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 0\/2/);assert.doesNotMatch(h.get('panel').innerHTML,/Paweł|Marta|Roman|Irena/);
+  const h=harness();start(h);inspectBoth(h);h.click('deny');h.get('deny').onclick();assert.equal(h.state().mistakes,1);h.advance(7);
+  h.click('allow');h.advance(7);assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 0\/2/);assert.doesNotMatch(h.get('panel').innerHTML,/Paweł|Marta|Roman|Irena/);
   h.click('restart');assert.equal(h.state().mistakes,2);h.click('cancel-new');h.click('new');h.click('confirm-new');assert.equal(h.state().mistakes,0);
 });
 test('controller: successful save notice expires; errors persist in HUD and pause; focus loss pauses',()=>{
   const ok=harness();start(ok);ok.advance(3);assert.equal(ok.get('save-status').hidden,true);
   const h=harness({brokenStorage:true});start(h);h.advance(5);assert.equal(h.get('save-status').hidden,false);assert.match(h.get('save-status').textContent,/Błąd zapisu/);
-  h.events.get('blur')();assert.match(h.get('panel').innerHTML,/Błąd zapisu/);h.click('resume');inspectBoth(h);h.click('allow');h.advance(4);assert.equal(h.state().nextVisitIndex,1);
+  h.events.get('blur')();assert.match(h.get('panel').innerHTML,/Błąd zapisu/);h.click('resume');inspectBoth(h);h.click('allow');h.advance(7);assert.equal(h.state().nextVisitIndex,1);
 });
 
 test('controller: selection resets on checkpoint resume and new shift; modals cannot count empty or hidden register',()=>{
-  const h=harness();start(h);inspectBoth(h);h.click('allow');h.advance(4);
-  h.click('register');h.get('resident-select').onchange({target:{value:'teresa'}});h.click('pause');h.click('menu');h.click('continue');
+  const h=harness();start(h);inspectBoth(h);h.click('allow');h.advance(7);
+  h.click('register');h.get('resident-select').onchange({target:{value:'teresa'}});h.click('pause');h.click('menu');h.click('continue');h.advance(3.6);
   assert.match(h.get('resident-content').innerHTML,/Nie wybrano lokatora/);assert.match(h.get('resident-select').innerHTML,/value="" selected/);
   assert.equal(h.get('allow').disabled,false); // No additional selection gate after the tutorial.
-  h.click('pause');h.click('menu');h.click('new');h.click('confirm-new');h.click('begin');h.visible('card');h.click('register');
+  h.click('pause');h.click('menu');h.click('new');h.click('confirm-new');h.click('begin');h.advance(3.6);h.visible('card');h.click('register');
   h.get('resident-select').onchange({target:{value:'jan'}});h.photo();h.visible('register');h.click('back-photo');assert.equal(h.get('allow').disabled,true);
   h.visible('register');assert.equal(h.get('allow').disabled,false);
 });
@@ -89,4 +89,25 @@ test('controller: reduced motion disables sway by default; reading dampens it an
   start(h);assert.equal(h.reading.at(-1),'documents');h.click('look');assert.equal(h.reading.at(-1),false);
   h.photo();assert.equal(h.reading.at(-1),'modal');h.click('back-photo');h.click('pause');
   h.get('sway').listeners.get('change')({target:{checked:false}});assert.equal(h.swaySettings.at(-1),false);
+});
+
+test('controller: first guest reveals UI and dialogue only after approach, then information after a separate delay and fade',()=>{
+  const h=harness();h.click('new');h.click('begin');
+  assert.equal(h.get('game').dataset.uiVisible,'false');assert.equal(h.get('dialog-copy').textContent,'');assert.equal(h.get('card-content').innerHTML,'');
+  h.advance(1);assert.equal(h.get('game').dataset.uiVisible,'false');h.advance(.5);
+  assert.equal(h.get('game').dataset.uiVisible,'true');assert.equal(h.get('game').dataset.dialogueVisible,'true');assert.match(h.get('dialog-copy').textContent,/Wrona/);
+  assert.equal(h.get('game').dataset.infoVisible,'false');assert.equal(h.get('allow').disabled,true);
+  h.advance(.7);assert.equal(h.get('game').dataset.infoVisible,'false');h.advance(.2);
+  assert.equal(h.get('game').dataset.infoVisible,'true');assert.match(h.get('card-content').innerHTML,/Jan Wrona/);
+  h.visible('card');assert.equal(h.get('allow').disabled,true);h.advance(1.2);
+  h.click('register');h.get('resident-select').onchange({target:{value:'jan'}});h.visible('register');assert.equal(h.get('allow').disabled,true);
+  h.visible('card');assert.equal(h.get('allow').disabled,false);
+});
+test('controller: UI stays between guests, reveal timers freeze on pause, and leaving cancels pending presentation',()=>{
+  const h=harness();start(h);inspectBoth(h);h.click('allow');h.advance(2.9);
+  assert.equal(h.get('game').dataset.uiVisible,'true');assert.equal(h.get('game').dataset.dialogueVisible,'false');assert.equal(h.get('card-content').innerHTML,'');
+  h.events.get('blur')();h.advance(10);assert.equal(h.get('game').dataset.infoVisible,'false');
+  h.click('resume');h.advance(3.6);assert.match(h.get('dialog-copy').textContent,/Siódemka/);assert.equal(h.get('game').dataset.infoVisible,'true');
+  h.click('pause');h.click('menu');h.click('continue');h.advance(.2);h.events.get('blur')();h.click('menu');h.advance(10);
+  assert.equal(h.get('game').dataset.uiVisible,'false');assert.equal(h.get('game').dataset.infoVisible,'false');
 });

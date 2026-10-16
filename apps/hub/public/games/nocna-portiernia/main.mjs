@@ -9,6 +9,8 @@ const audio=createAudio();let scene;
 let state=initialState(),saved=null,phase='menu',paused=false,selectedResidentId=null,seen={card:false,register:false},overlayKind='menu',transition=null;
 const motionPreference=window.matchMedia?.('(prefers-reduced-motion: reduce)');
 let swayEnabled=!(motionPreference?.matches??false),swayManual=false;
+const ARRIVAL_SECONDS=1.35,INFORMATION_DELAY=1,FADE_SECONDS=1.1;
+let entrance=null,uiShown=false;
 let sound=true,flashes=false,inspectionOpen=false,panelMode='card',currentDialogue='',saveError='',saveTTL=0,hintTTL=9,fullscreenExited=false;
 motionPreference?.addEventListener('change',e=>{if(!swayManual){swayEnabled=!e.matches;scene?.setSwayEnabled(swayEnabled);const control=$('sway');if(control)control.checked=swayEnabled;}});
 function fatal(message){audio.pause();scene?.pause(true);$('fatal').hidden=false;if(message)$('fatal-detail').textContent=message;}
@@ -35,7 +37,7 @@ function wireSettings(){
 async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else {fullscreenExited=false;const result=await requestDefaultFullscreen(document);if(['unsupported','denied'].includes(result)&&$('screen-note'))$('screen-note').textContent='Pełny ekran niedostępny. Gra działa w całym oknie.';}}catch{}}
 function startFullscreen(){if(fullscreenExited)return;void requestDefaultFullscreen(document).then(result=>{if(result==='unsupported'||result==='denied')$('input-hint').textContent='Pełny ekran niedostępny · gra działa w całym oknie.';});}
 function menu(){
-  phase='menu';paused=false;transition=null;scene?.pause(true);audio.pause();$('controls').hidden=true;$('inspection').hidden=true;inspectionOpen=false;
+  phase='menu';paused=false;transition=null;entrance=null;uiShown=false;setPresentation(false,false,false);scene?.pause(true);audio.pause();$('controls').hidden=true;$('inspection').hidden=true;inspectionOpen=false;
   modal(`<span class="eyebrow">PARTY PIXELS · PROTOTYP A</span><h1>Nocna<br>portiernia</h1><p>03:00. Jesionowa 12.<br>Sprawdź, kto naprawdę tu mieszka.</p><div class="stack">${saved?'<button id="continue" class="primary">Kontynuuj zapis</button>':''}<button id="new" class="${saved?'secondary':'primary'}">Nowa zmiana</button><button id="fullscreen" class="secondary">Pełny ekran</button></div>${settings()}<p id="screen-note" class="tiny">Dwie pierwsze wizyty. Lokalny zapis gościa.${saveError?' '+saveError:''}</p>`, 'menu');
   $('new').onclick=()=>{if(saved)confirmNew();else {startFullscreen();intro();}};
   if($('continue'))$('continue').onclick=()=>{startFullscreen();state=structuredClone(saved);if(state.ending)summary();else beginVisit();};
@@ -43,17 +45,37 @@ function menu(){
 }
 function confirmNew(){modal('<span class="eyebrow">NOWA ZMIANA</span><h2>Zacząć od początku?</h2><p>Poprzedni lokalny zapis tego prototypu zostanie zastąpiony.</p><div class="stack"><button id="confirm-new" class="primary">Rozpocznij nową zmianę</button><button id="cancel-new">Zachowaj zapis</button></div>','confirm');$('confirm-new').onclick=()=>{startFullscreen();intro();};$('cancel-new').onclick=menu;}
 function intro(){
-  state=initialState();save();phase='intro';audio.resume();
+  state=initialState();uiShown=false;entrance=null;setPresentation(false,false,false);save();phase='intro';audio.resume();
   modal('<span class="eyebrow">WIADOMOŚĆ POPRZEDNIKA · JESIONOWA 12</span><h2>Po trzeciej<br>tylko lokatorzy.</h2><blockquote>„Porównaj nazwisko, mieszkanie i twarz. Spis jest aktualny. Zmiennik przyjdzie rano”.</blockquote><p>Porównaj podane informacje z wpisem w spisie i twarzą gościa. Wybierz „Porównaj ze spisem”, a potem samodzielnie odszukaj lokatora. Nie musisz się spieszyć.</p><button id="begin" class="primary">Odkładam wiadomość</button>','intro');
   $('begin').onclick=beginVisit;
 }
-function syncScene(){scene?.pause(paused||!['playing','transition'].includes(phase));scene?.setReading(! $('overlay').hidden?'modal':inspectionOpen?'documents':false);}
+function syncScene(){scene?.pause(paused||!['arrival','speaking','revealing','playing','transition'].includes(phase));scene?.setReading(! $('overlay').hidden?'modal':inspectionOpen?'documents':false);}
 function setDialogue(text){currentDialogue=text;$('dialog-copy').textContent=text;measureDialogue();}
 function measureDialogue(){requestAnimationFrame(()=>{$('dialog-expand').hidden=$('dialog-copy').scrollHeight<=$('dialog-copy').clientHeight+1;});}
+function setPresentation(ui,dialogue,information){
+  $('game').dataset.uiVisible=String(ui);$('game').dataset.dialogueVisible=String(dialogue);$('game').dataset.infoVisible=String(information);
+  $('hud').inert=!ui;$('controls').inert=!ui;
+  $('dialogue').setAttribute('aria-hidden',String(!dialogue));$('inspection').setAttribute('aria-hidden',String(!information));
+}
 function beginVisit(){
-  if(!scene)return;phase='playing';paused=false;transition=null;selectedResidentId=null;seen={card:false,register:false};inspectionOpen=false;hideModal();$('controls').hidden=false;
-  scene.show(visits[state.nextVisitIndex].guest);scene.center();syncScene();audio.resume();audio.cue('step');
-  setDialogue(`„${visits[state.nextVisitIndex].dialog}”`);inspect('card');hud();
+  if(!scene)return;phase='arrival';paused=false;transition=null;entrance={elapsed:0};selectedResidentId=null;seen={card:false,register:false};inspectionOpen=false;hideModal();$('controls').hidden=false;
+  // Clear old visitor data before starting the approach. Keep layout slots to prevent camera jumps.
+  $('card-content').innerHTML='';$('resident-content').innerHTML='';$('resident-select').innerHTML='<option value="" selected>Wybierz lokatora…</option>';
+  $('inspection').hidden=false;$('register-picker').hidden=$('resident-sheet').hidden=true;$('documents').classList.toggle('compare',false);
+  setDialogue('');setPresentation(uiShown,false,false);
+  scene.show(visits[state.nextVisitIndex].guest);scene.center();syncScene();audio.resume();audio.cue('step');hud();
+}
+function updateEntrance(dt){
+  if(!entrance||paused||!$('overlay').hidden)return;
+  entrance.elapsed+=dt;
+  if(phase==='arrival'&&entrance.elapsed>=ARRIVAL_SECONDS){
+    entrance.elapsed-=ARRIVAL_SECONDS;phase='speaking';uiShown=true;
+    setDialogue(`„${visits[state.nextVisitIndex].dialog}”`);setPresentation(true,true,false);hud();
+  }else if(phase==='speaking'&&entrance.elapsed>=INFORMATION_DELAY){
+    entrance.elapsed-=INFORMATION_DELAY;phase='revealing';inspect('card',true);setPresentation(true,true,true);hud();
+  }else if(phase==='revealing'&&entrance.elapsed>=FADE_SECONDS){
+    entrance=null;phase='playing';hud();refreshVisibility();
+  }
 }
 function hud(){
   $('visit').textContent=`Wizyta ${Math.min(state.nextVisitIndex+(phase==='transition'?0:1),state.limit)}/${state.limit}`;
@@ -73,8 +95,8 @@ function hud(){
 function personHTML(id,name,flat,source){return `<div class="person"><button class="portrait-button" data-person="${id}" data-source="${source}" aria-label="Powiększ: ${source}"><img class="portrait" src="${scene.portraits[id]}" alt="${source}" width="90" height="110"><span class="photo-label">${source}</span></button><div class="identity"><strong>${name}</strong><div class="flat-line">Mieszkanie<span class="flat">${flat}</span></div></div></div>`;}
 function portraitEvents(){for(const button of $('inspection').querySelectorAll('[data-person]'))button.onclick=()=>portrait(button.dataset.person,button.dataset.source);}
 function updateResident(){const r=residents.find(r=>r.id===selectedResidentId);$('resident-content').innerHTML=r?personHTML(r.id,r.name,r.flat,'Zdjęcie ze spisu'):'<div class="empty-resident"><strong>Nie wybrano lokatora</strong><p>Wybierz osobę ze spisu, aby porównać dane.</p></div>';portraitEvents();refreshVisibility();}
-function inspect(kind){
-  if(phase!=='playing'||paused||!$('overlay').hidden)return;
+function inspect(kind,automatic=false){
+  if(!(phase==='playing'||(automatic&&phase==='revealing'))||paused||!$('overlay').hidden)return;
   const v=visits[state.nextVisitIndex];panelMode=kind==='register'?'compare':'card';
   $('card-content').innerHTML=personHTML(v.card,v.name,v.flat,'Przedstawione zdjęcie');
   $('resident-select').innerHTML=`<option value="" ${selectedResidentId===null?'selected':''}>Wybierz lokatora…</option>`+residents.map(r=>`<option value="${r.id}" ${selectedResidentId===r.id?'selected':''}>${r.name} · ${r.flat}</option>`).join('');
@@ -108,7 +130,7 @@ function makeDecision(allow){
 }
 $('allow').onclick=()=>makeDecision(true);$('deny').onclick=()=>makeDecision(false);
 function pause(){
-  if(!['playing','transition'].includes(phase)||paused)return;
+  if(!['arrival','speaking','revealing','playing','transition'].includes(phase)||paused)return;
   paused=true;syncScene();audio.pause();hud();
   modal(`<span class="eyebrow">JESIONOWA 12 · ZMIANA WSTRZYMANA</span><h2>Chwila ciszy.</h2><p>${saveError||'Postęp zapisuje się lokalnie po każdej zakończonej wizycie.'}</p><div class="stack"><button id="resume" class="primary">Wznów</button><button id="menu">Ekran startowy</button><button id="fullscreen">Pełny ekran</button></div>${settings()}<p id="screen-note" class="tiny">Prototyp: dwie wizyty. Bez zapisu na koncie huba.</p>`,'pause');
   $('resume').onclick=()=>{paused=false;hideModal();syncScene();audio.resume();hud();};$('menu').onclick=menu;$('fullscreen').onclick=fullscreen;wireSettings();
@@ -128,7 +150,7 @@ window.addEventListener('blur',pause);document.addEventListener('visibilitychang
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement){fullscreenExited=true;pause();}});
 window.addEventListener('resize',()=>{refreshVisibility();measureDialogue();});
 function summary(){
-  phase='summary';paused=false;inspectionOpen=false;$('inspection').hidden=true;$('controls').hidden=true;scene?.pause(true);audio.pause();
+  phase='summary';paused=false;entrance=null;inspectionOpen=false;$('inspection').hidden=true;$('controls').hidden=true;scene?.pause(true);audio.pause();
   modal(`<span class="eyebrow">KONIEC PROTOTYPU A · TO NIE KONIEC ZMIANY</span><h1>Dwie wizyty<br>za tobą.</h1><p>Poprawne decyzje: ${state.decisions.length-state.mistakes}/${state.decisions.length} · Naruszenia: ${state.mistakes}/3</p>${state.decisions.map((answer,i)=>`<article class="result"><strong>Wizyta ${i+1} · ${answer===visits[i].allow?'Poprawnie':'Pomyłka'}</strong><p>Twoja decyzja: ${answer?'Wpuść':'Odmów'}. Prawidłowa: ${visits[i].allow?'Wpuść':'Odmów'}.</p><p>${visits[i].explanation.replaceAll('Na karcie','W podanych informacjach').replaceAll('na karcie','w podanych informacjach')}</p></article>`).join('')}<p class="tiny">Pełny GDD obejmuje osiem wizyt i dwa zakończenia. Ten fragment sprawdza czytelność dokumentów i sterowanie.</p><div class="stack"><button id="restart" class="primary">Zagraj ponownie</button><button id="menu">Ekran startowy</button></div>`,'summary');
   $('restart').onclick=confirmNew;$('menu').onclick=menu;
 }
@@ -136,6 +158,7 @@ let last=0;
 function tick(now){
   const dt=Math.min((now-last)/1000||0,.05);last=now;
   if(!document.hidden){if(saveTTL>0){saveTTL=Math.max(0,saveTTL-dt);if(!saveTTL&&!saveError)$('save-status').hidden=true;}if(phase==='playing'&&!paused&&hintTTL>0){hintTTL=Math.max(0,hintTTL-dt);if(!hintTTL)$('input-hint').hidden=true;}}
+  if(!document.hidden)updateEntrance(dt);
   if(phase==='transition'&&!paused&&transition){
     transition.remaining-=dt;
     if(!transition.reacted&&transition.remaining<.6){transition.reacted=true;if(!transition.correct){audio.cue('door');if(state.mistakes===2)scene.rattle();setDialogue(`Naruszenie procedury: ${state.mistakes}/3. ${state.mistakes===1?'[Pojedyncze uderzenie w rurę]':'[Klamka drzwi portierni porusza się]'}`);}else if(transition.index===1){audio.cue('error');scene.flicker(flashes);setDialogue('[Krótki trzask świetlówki]');}}
