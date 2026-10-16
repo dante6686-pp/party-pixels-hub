@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useRef,useState,type FormEvent} from 'react';
 import {createPlatformClient,type GameId,type Session,type Receipt} from '@party-pixels/sdk';
 import {getClient,avatars,type Profile} from '../lib/client';
+import {recordPlayed} from '../lib/library';
 type Best={game_id:GameId;value:number;unit:string;attempts:number;verification_status:string};
 type Pending={sessionId:string;requestId:string;result:Record<string,unknown>};
 type Rank={player_id:string;value:number;handle:string};
@@ -55,7 +56,7 @@ export default function Arcade({profile}:{profile:Profile}) {
   }
   async function begin(gameId:GameId) {
     setBusy(true);setMessage('');setReceipt(null);setRunning(false);
-    try {const s=await sdk.sessions.start(gameId);if(active.current){setSession(s);setPending(null);}}
+    try {const s=await sdk.sessions.start(gameId);if(active.current){setSession(s);setPending(null);void recordPlayed(profile.player_id,gameId).catch(()=>{});}}
     catch(error){if(active.current)setMessage(explain(error));}
     finally{if(active.current)setBusy(false);}
   }
@@ -86,7 +87,7 @@ export default function Arcade({profile}:{profile:Profile}) {
   return <section className="arcade" aria-label="Gry testowe i rekordy">
     <div className="arcade-title"><div><p className="eyebrow">PIERWSZE ROZGRYWKI</p><h2>{sdk.player.get().avatar} Gramy, {sdk.player.get().displayName}?</h2></div><span className="dev-label">TEST INTEGRACJI</span></div>
     <p className="muted">Dwie małe gry, jedno konto. Rekordy zapisujemy osobno — punktów nie dodajemy do milisekund.</p>
-    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=>{const best=bests.find(b=>b.game_id===id);return <article key={id} className="game-card"><span className="game-symbol" aria-hidden="true">{id==='quick-math'?'＋':'◷'}</span><h3>{titles[id]}</h3><p>{id==='quick-math'?'Pięć działań. Ile rozwiążesz poprawnie?':'Uruchom stoper i zatrzymaj go po dwóch sekundach. Bez podglądania.'}</p><p className="best">{best?`Rekord: ${best.value}${id==='quick-math'?' / 5 pkt':' ms błędu'} · prób: ${best.attempts}`:'Jeszcze bez rekordu'}</p><small>{id==='quick-math'?'Odpowiedzi sprawdza serwer.':'Czas deklaruje przeglądarka — wynik niezweryfikowany.'}</small><button className="primary" onClick={()=>void begin(id)} disabled={busy||!!session||!!pending}>Zagraj <span>→</span></button></article>;})}</div>
+    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=>{const best=bests.find(b=>b.game_id===id);return <article id={'arcade-'+id} key={id} className="game-card"><span className="game-symbol" aria-hidden="true">{id==='quick-math'?'＋':'◷'}</span><h3>{titles[id]}</h3><p>{id==='quick-math'?'Pięć działań. Ile rozwiążesz poprawnie?':'Uruchom stoper i zatrzymaj go po dwóch sekundach. Bez podglądania.'}</p><p className="best">{best?`Rekord: ${best.value}${id==='quick-math'?' / 5 pkt':' ms błędu'} · prób: ${best.attempts}`:'Jeszcze bez rekordu'}</p><small>{id==='quick-math'?'Odpowiedzi sprawdza serwer.':'Czas deklaruje przeglądarka — wynik niezweryfikowany.'}</small><button className="primary" onClick={()=>void begin(id)} disabled={busy||!!session||!!pending}>Zagraj <span>→</span></button></article>;})}</div>
     {session&&<div className="round"><h3>{titles[session.gameId]}</h3><p className="muted">Gracz: @{sdk.player.get().handle}</p>
       {session.gameId==='quick-math'&&Array.isArray(session.challenge)?<form onSubmit={answer}><fieldset disabled={busy||!!pending}>{session.challenge.map((q,i)=><div className="math-row" key={i}><label htmlFor={'answer'+i}>{q.a} + {q.b} =</label><input id={'answer'+i} name={'answer'+i} type="number" inputMode="numeric" min="0" max="999" step="1" required/></div>)}<button className="primary" type="submit">{busy?'Zapisuję…':'Sprawdź odpowiedzi'}</button></fieldset></form>:<button className="clock-button" onClick={clock} disabled={busy||!!pending}>{running?'STOP':'START'}</button>}
       {!pending&&<button className="text-button" disabled={busy} onClick={()=>{setSession(null);setRunning(false);}}>Opuść rundę</button>}

@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import {recordPlayed} from '../../../lib/library';
 import Link from 'next/link';
 import {getClient,avatars} from '../../../lib/client';
 import {GAME,PROTOCOL,frameMessage,acceptsHandshake,campaignTitle,type Checkpoint,type GamePlayer,type InputMode} from '../../../lib/game-protocol';
@@ -166,6 +167,7 @@ export default function GameHost() {
   }
   function launch(continued:boolean){
     if(!ready)return;
+    if(player)void recordPlayed(player.playerId,'magazyn-auto').catch(()=>{});
     if(!document.fullscreenElement)void fullscreen();setStarted(true);send({type:'start',continued});iframe.current?.focus();
   }
   function togglePause(){send({type:state==='paused'?'resume':'pause'});if(state==='paused')iframe.current?.focus();}

@@ -87,3 +87,13 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - Components retain in-memory drafts when moving between hub views. Hidden message threads stop polling and never mark content read; inbox counters remain refreshed. Account recovery navigates to Profile, auth fragments are not parsed as application routes.
 - Guest social views guide to login/profile; native forms, skip link, focus outlines, reduced-motion preference and 44px controls retained.
 - No database/API changes. Production build/TypeScript and existing 37 Node tests passed. Deployed browser navigation and visual review follow; authenticated/mobile-device review remains user verification.
+
+## 2026-10-16 — Account game library
+- Patryk confirmed the redesigned hub works on his phone and authorized the next step: favorites, recently played and campaign continuation.
+- Added Twoja biblioteka to Odkrywaj for signed-in profiles, with filters All/Favorites/Recently played, stars for the three existing games, dates and an account checkpoint Continue card for MAGAZYN AUTO.
+- Continue opens the existing game host, which loads the checkpoint and presents its continuation button; it does not auto-start gameplay/fullscreen. Short games link to their actual playable cards and start a fresh round.
+- Recents are recorded when a native round starts successfully or the 3D host's launch button is pressed, not merely on catalog clicks. Tracking failure does not prevent gameplay. History starts from deployment, with no backfill from old sessions.
+- Private player_library keyed by player/game, RLS deny-default/no direct client grants, checked pp_library RPC requiring expected auth owner, confirmed/unbanned account and profile. Allowlist of three game ids; favorite updates set explicit booleans (safe retry), played updates preserve favorite and monotonic server timestamp. Get returns only that account's preferences and checkpoint mission/date.
+- Library refreshes on games-view activation, browser focus, successful local play tracking and manual refresh. No local-storage account data or guest cloud library.
+- Build/TypeScript and existing 37 Node tests passed. SQL rollback suite passed: favorite idempotency, recent/favorite independence, all catalog ids, invalid operations, checkpoint metadata, third-account read/write protection, anonymous/direct table denial. Advisors: 7 intentional private RLS-without-policy INFO, pre-existing leaked password WARN outside scope. https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Signed-in browser/two-device UI test remains user confirmation; current cloud browser is logged out.
