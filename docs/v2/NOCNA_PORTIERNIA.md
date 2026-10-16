@@ -6,7 +6,7 @@
 
 Kod odrębnej gry w `apps/hub/public/games/nocna-portiernia/`. Nie zmieniono aplikacji huba, katalogu, infrastruktury, bazy ani hosta. Patryk zatwierdził osobny, stale aktualizowany podgląd do testów; integracja i dodanie do katalogu huba pozostają osobnym zleceniem.
 
-Prototyp obejmuje pierwsze dwie wizyty (Jan Wrona i Teresa Mazur), jedną proceduralną scenę Three.js, ograniczony obrót kamery, fikcyjną kartę mieszkańca i spis sześciu lokatorów. Zdjęcia powstają z tych samych modeli co goście. Kontrola nazwiska/mieszkania/twarzy, obejrzenie dokumentów w pierwszej wizycie, blokada decyzji w przejściach, widoczna liczba naruszeń, podsumowanie dwóch wizyt, restart z potwierdzeniem, pauza, lokalny checkpoint i opcjonalny fullscreen.
+Prototyp obejmuje pierwsze dwie wizyty (Jan Wrona i Teresa Mazur), jedną proceduralną scenę Three.js, ograniczony obrót kamery, fikcyjną kartę mieszkańca i spis sześciu lokatorów. Zdjęcia powstają z tych samych modeli co goście. Kontrola nazwiska/mieszkania/twarzy, obejrzenie dokumentów w pierwszej wizycie, blokada decyzji w przejściach, widoczna liczba naruszeń, podsumowanie dwóch wizyt, restart z potwierdzeniem, pauza, lokalny checkpoint i domyślny fullscreen po świadomym starcie (z fallbackiem).
 
 Wszystkie osiem wizyt jest zapisanych jako dane scenariusza. Publiczny prototyp ma limit **2**, nie udostępnia wizyt 3–8 ani końcowych scen całej gry. Logika pełnej wersji (3 pomyłki, 8 wizyt) ma testy, ale nie stanowi implementacji pełnej prezentacji. Zakończenie prototypu jest odrębne od przetrwania zmiany. Nie przewijamy czasu do 06:00 po dwóch wizytach.
 
@@ -62,3 +62,11 @@ Otwórz samodzielnie w Chrome na telefonie. Jeżeli pojawi się logowanie ChatGP
 Rutynowe aktualizowanie tego podglądu podczas dalszej pracy jest zatwierdzone przez Patryka. Zachowuj adres i projekt Sites `appgprj_6ad28f60ccc08191a07a9bf1eb3b59e5` (owner-private). Lokalny checkout pakietu: `/workspace/sites/nocna-portiernia-test`; gdy nie istnieje, odtwórz źródło tego samego projektu zgodnie z Sites skill. Kod gry rozwijaj w GitHub; do pakietu kopiuj katalog gry i istniejący vendor Three.js z licencją. Pakiet root przekierowuje do `/games/nocna-portiernia/index.html`. Nie zmieniaj przypadkowo katalogu ani wdrożenia huba.
 
 Usługa potwierdziła succeeded: deployment `appgdep_6ad28f9404d88191959d5186c49fcfcd`, commit pakietu `18a23830dd3f1186934f69970876089f22f47cbb` z kodu gry `734e81260983f5e1b7d768af471f30b0785dd975`. Nie jest to dowód testu dotyku/WebGL. Ograniczenia QA opisane wyżej pozostają aktualne.
+
+## Stanowisko kontroli — rozdział 21 GDD, 16.10.2026
+
+Wdrożony kod fba8fbf2d02d52e72b911940d5b62105e0688f74: kompaktowy HUD, osobny obszar sceny z bliższą kamerą i neutralniejszym światłem, krótki dialog z rozwinięciem, automatyczna karta i niemodalne porównanie dwóch dokumentów z ręcznym wyborem lokatora. Twarz pozostaje nad panelem; decyzja możliwa bez zamykania dokumentów. Powiększenie zdjęcia jest modalem i blokuje decyzję. Samo kliknięcie spisu nie zalicza obejrzenia: konieczna jest widoczność treści. Wybrany wpis, format checkpointu i reguły pozostają zachowane. Sukces zapisu znika po 2,7 s, błąd pozostaje w HUD i pauzie. Fullscreen nie jest ponawiany po świadomym wyjściu użytkownika.
+
+Testy: 52/52 Node. Symulacja kontrolera obejmuje powyższe ścieżki oraz pauzę/restart/wznowienie. Geometria kamery mieści sześć głów/fryzur w pięciu przykładowych obszarach sceny. Nie wykonano wizualnego QA, screenshotów ani testu fizycznego dotyku. To nadal testy logiki/geometrii, nie testy viewportów przeglądarki. Ograniczenie infrastruktury podglądu opisane wyżej pozostaje aktualne. Do odbioru: 360×640, 390×844, 412×915, niski poziom, PC 1366×768 i rzeczywista próba telefonu; także pomiar kontrastu całego UI.
+
+Ten sam [prywatny podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site) wdrożony ze statusem succeeded, deployment `appgdep_6ad29606077881919798de64bc0497e9`, pakiet `111c96adfa9f3c9f8c7b37877a6d4a0e8665f74b`. Gra nadal poza katalogiem huba.
