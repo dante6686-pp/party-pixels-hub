@@ -28,6 +28,6 @@ To zapis lokalny w tej przeglądarce, nie synchronizacja Supabase. Gość i każ
 
 ## Walidacja
 
-Build Next.js i 28 testów Node przeszły: kontrakty dotychczasowych dwóch gier, kontrola źródła/originu/wspólnego protokołu, walidacja checkpointów i rozdzielenie kluczy, oryginalne testy mechaniki oraz geometrii 3D (278 meshes, 43741 wierzchołków). Pełna kampania przechodzi test symulacji bez teleportowania pozycji. Stan testu w przeglądarce i wdrożenia jest zapisany w IMPLEMENTATION_PROGRESS.md.
+Build Next.js i 29 testów Node przeszły: kontrakty dotychczasowych dwóch gier, kontrola źródła/originu/wspólnego protokołu, walidacja checkpointów i rozdzielenie kluczy, oryginalne testy mechaniki oraz geometrii 3D (278 meshes, 43741 wierzchołków). Pełna kampania przechodzi test symulacji bez teleportowania pozycji. Wdrożenie dev uruchomiło hosta i moduły gry w sandboxie. Przeglądarka cloud nie udostępnia WebGL (GL_VENDOR i GL_RENDERER: Disabled), więc test rzeczywistego renderowania i sterowania sceną pozostaje do wykonania na fizycznym urządzeniu. Dodatkowy test kontroluje przekazanie błędu grafiki sprzed połączenia i odrzucenie obcego init. Stan wdrożenia jest zapisany w IMPLEMENTATION_PROGRESS.md.
 
 Następne rozszerzenia: test fizycznym telefonem Android/iOS, chmurowe checkpointy z RLS, potwierdzony regulamin wyników tej gry, kolejne zatwierdzone buildy. Zapisy i rankingi dwóch małych gier pozostają oddzielne.

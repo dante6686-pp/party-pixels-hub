@@ -1,6 +1,6 @@
 // The sandbox has no cookies/localStorage access. The parent owns identity and persistence.
 export function connectPlatform(callbacks) {
-  let port=null,request=0;
+  let port=null,request=0,failed=false;
   const pending=new Set();
   const send=data=>port?.postMessage(data);
   const parentOrigin=(()=>{try{return new URL(document.referrer).origin;}catch{return null;}})();
@@ -16,6 +16,7 @@ export function connectPlatform(callbacks) {
       if(data.type==='saved'&&pending.delete(data.requestId))callbacks.saved(data.ok===true);
     };
     port.start();callbacks.init(event.data);callbacks.input(event.data.mode==='touch'?'touch':'keyboard');
+    if(failed)send({type:'error'});
   };
   window.addEventListener('message',init);
   let lastDetected='';
@@ -25,7 +26,7 @@ export function connectPlatform(callbacks) {
   return {
     ready(){if(parentOrigin&&parent!==window)parent.postMessage({type:'pp:ready',protocol:1,build:'magazyn-auto-pp-1'},parentOrigin);},
     state(state){send({type:'state',state});},
-    error(){send({type:'error'});},
+    error(){failed=true;send({type:'error'});},
     save(checkpoint){
       if(!port||pending.size>=10){callbacks.saved(false);return;}
       const requestId=++request;pending.add(requestId);send({type:'save',checkpoint,requestId});
