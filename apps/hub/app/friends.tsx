@@ -1,9 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {avatars,getClient,type Profile} from '../lib/client';
+import Messages from './messages';
 type Person=Profile & {request_id:string|null;relation:'none'|'friend'|'incoming'|'outgoing'};
 const errors:Record<string,string>={PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',PROFILE_REQUIRED:'Potwierdź e-mail i zapisz profil.',COOLDOWN:'Ponowne zaproszenie do tej osoby będzie dostępne po 24 godzinach.',FRIEND_LIMIT:'Limit: 20 wysłanych zaproszeń lub 200 znajomości i zaproszeń na konto.',STALE_REQUEST:'Zaproszenie się zmieniło. Odśwież listę.',INVALID_TRANSITION:'Stan zaproszenia się zmienił. Odśwież listę.'};
 export default function Friends({owner}:{owner:string}){
+ const [selected,setSelected]=useState<Profile|null>(null);
  const [people,setPeople]=useState<Person[]>([]),[results,setResults]=useState<Person[]|null>(null),[query,setQuery]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState<string|null>(null);
  const alive=useRef(true),locked=useRef(false),searchRev=useRef(0),listRev=useRef(0);
  const rpc=useCallback(async(action:string,extra:Record<string,unknown>={})=>{
@@ -44,11 +46,12 @@ export default function Friends({owner}:{owner:string}){
    {p.relation==='none'&&<button disabled={busy} onClick={()=>void act('send',p)}>Zaproś</button>}
    {p.relation==='incoming'&&<><button disabled={busy} onClick={()=>void act('accept',p)}>Przyjmij</button><button disabled={busy} onClick={()=>void act('decline',p)}>Odrzuć</button></>}
    {p.relation==='outgoing'&&<><small>Wysłano</small><button disabled={busy} onClick={()=>void act('cancel',p)}>Cofnij</button></>}
+   {p.relation==='friend'&&<button onClick={()=>{setSelected(p);setTimeout(()=>document.getElementById('messages-title')?.scrollIntoView({behavior:'smooth',block:'start'}),0);}}>Napisz</button>}
    {p.relation==='friend'&&(confirm===p.player_id?<><span>Usunąć?</span><button disabled={busy} onClick={()=>void act('remove',p)}>Tak, usuń</button><button onClick={()=>setConfirm(null)}>Zostaw</button></>:<button disabled={busy} onClick={()=>setConfirm(p.player_id)}>Usuń znajomego</button>)}
   </div></li>;
  }
  const groups=[['incoming','Otrzymane zaproszenia','Nie masz nowych zaproszeń.'],['friend','Twoi znajomi','Twoja ekipa zaczyna się od pierwszego zaproszenia.'],['outgoing','Wysłane zaproszenia','Nie masz oczekujących wysłanych zaproszeń.']] as const;
- return <section className="friends" aria-labelledby="friends-title" id="znajomi">
+ return <><section className="friends" aria-labelledby="friends-title" id="znajomi">
   <div className="friends-heading"><div><p className="eyebrow">DOBRE GRY. DOBRA EKIPA.</p><h2 id="friends-title">Twoi ludzie.</h2></div><button disabled={busy} onClick={()=>{setNotice('');void refresh();}}>Odśwież</button></div>
   <p className="muted">Znajdź gracza po nicku i dodaj do znajomych.</p>
   <form className="friend-search" onSubmit={search}><label htmlFor="friend-query">Nick gracza</label><div><input id="friend-query" value={query} onChange={e=>{setQuery(e.target.value);setResults(null);searchRev.current++;}} placeholder="Wpisz co najmniej 3 znaki" autoComplete="off" minLength={3} maxLength={20} required/><button disabled={busy} type="submit">{busy?'Chwileczkę…':'Szukaj'}</button></div></form>
@@ -56,5 +59,5 @@ export default function Friends({owner}:{owner:string}){
   {results!==null&&<div className="friends-group"><h3>Wyniki wyszukiwania</h3>{results.length?<ul>{results.map(row)}</ul>:<p className="muted">Nie znaleziono innych graczy. Sprawdź nick.</p>}</div>}
   {loading?<p role="status">Wczytuję ekipę…</p>:groups.map(([relation,title,empty])=>{const rows=people.filter(p=>p.relation===relation);return <div className="friends-group" key={relation}><h3>{title} <span>{rows.length}</span></h3>{rows.length?<ul>{rows.map(row)}</ul>:<p className="muted">{empty}</p>}</div>;})}
   <small>Lista odświeża się co 30 sekund i po powrocie do strony. Zaproszenia dotyczą znajomości.</small>
- </section>;
+ </section><Messages owner={owner} selected={selected} onSelect={setSelected}/></>;
 }

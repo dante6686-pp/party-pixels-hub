@@ -68,3 +68,14 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - Fixed excessive 24h cooldown: sender cancellation now permits immediate resend. Decline/removal still enforce cooldown.
 - Added closed_reason without guessing historical reasons. Corrected only the single closed test relationship involving dante6686, based on Patryk's report that he cancelled it. No invitation sent and no friendship accepted on his behalf.
 - SQL lifecycle suite passed with immediate cancel/resend, new request generation, rejection of old cancel, and preserved decline/removal cooldown.
+
+## 2026-10-16 — Private messages MVP
+- Patryk confirmed invitations work on his two accounts, then authorized private messages.
+- Friends now have a Napisz action. Inbox shows up to 200 most recent conversations and unread indicators. Thread supports plain text (1–2000 characters), timestamps, own/peer bubbles, and older history in pages of 50.
+- New messages poll every 5 seconds while visible, inbox every 10 seconds; focus refresh. Read markers advance only for the selected focused/visible conversation at its bottom, and only through the latest fetched message.
+- Sending requires current accepted friendship; former friends retain their shared history but cannot send. No automatic sends to real users were performed.
+- Private tables direct_messages and direct_message_reads with RLS and no direct client grants. Controlled RPC checks auth.uid against expected owner and confirmed/unbanned user; pair-specific participant filtering, locks shared with friendship mutations, per-sender 30/min limit. Sender/request UUID gives idempotent retries and rejects changed payload.
+- Failed send keeps immutable payload/UUID in the open thread for explicit retry. Draft/retry state is in memory only; changing conversations or reloading discards it. No attachments, online presence, push notifications or end-to-end encryption are claimed.
+- Production build/TypeScript and existing 37 Node tests passed. New SQL rollback suite tested history privacy (third account), spoofed owner/read marker, direct/anonymous access denial, missing friendship, removal, length, retry/conflict, unread bounds, pagination and rate limit. Pagination test caught text-sort alias bug, fixed in a follow-up migration using numeric qualified message id.
+- Advisors: six intentional private-table deny-by-default INFOs and existing leaked-password protection WARN. https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Full signed-in browser test of new messaging remains user verification; cloud browser has no signed-in account.
