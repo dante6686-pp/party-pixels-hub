@@ -2,6 +2,7 @@ import { createScene } from './scene.mjs';
 import { residents, visits, PROTOTYPE_LIMIT } from './scenario.mjs';
 import { initialState, decide, validCheckpoint } from './logic.mjs';
 import { createAudio } from './audio.mjs';
+import { requestDefaultFullscreen } from './fullscreen.mjs';
 
 const $=id=>document.getElementById(id),KEY='pp:nocna-portiernia:prototype-a:guest:v1';
 const audio=createAudio();let scene;
@@ -27,14 +28,15 @@ function wireSettings(){
   $('flashes')?.addEventListener('change',e=>{flashes=e.target.checked;});
 }
 async function fullscreen(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(document.fullscreenElement)await document.exitFullscreen();else $('screen-note').textContent='Pełny ekran nie jest dostępny. Możesz grać w obecnym widoku.';}catch{if($('screen-note'))$('screen-note').textContent='Przeglądarka nie włączyła pełnego ekranu. Możesz grać dalej.';}}
+function startFullscreen(){void requestDefaultFullscreen(document).then(result=>{if(result==='unsupported'||result==='denied')$('input-hint').textContent='Pełny ekran niedostępny · gra działa w całym oknie.';});}
 function menu(){
   phase='menu';paused=false;scene?.pause(true);audio.pause();$('controls').hidden=true;$('inspection').hidden=true;inspectionOpen=false;lookMode=false;
   modal(`<span class="eyebrow">PARTY PIXELS · PROTOTYP A</span><h1>Nocna<br>portiernia</h1><p>03:00. Jesionowa 12.<br>Sprawdź, kto naprawdę tu mieszka.</p><div class="stack">${saved?'<button id="continue" class="primary">Kontynuuj zapis</button>':''}<button id="new" class="${saved?'secondary':'primary'}">Nowa zmiana</button><button id="fullscreen" class="secondary">Pełny ekran</button></div>${settings()}<p id="screen-note" class="tiny">Dwie pierwsze wizyty. Lokalny zapis gościa. Bez integracji z kontem.</p>`, 'menu');
-  $('new').onclick=()=>{if(saved)confirmNew();else intro();};
-  if($('continue'))$('continue').onclick=()=>{state=structuredClone(saved);if(state.ending)summary();else beginVisit();};
+  $('new').onclick=()=>{if(saved)confirmNew();else {startFullscreen();intro();}};
+  if($('continue'))$('continue').onclick=()=>{startFullscreen();state=structuredClone(saved);if(state.ending)summary();else beginVisit();};
   $('fullscreen').onclick=fullscreen;wireSettings();
 }
-function confirmNew(){modal('<span class="eyebrow">NOWA ZMIANA</span><h2>Zacząć od początku?</h2><p>Poprzedni lokalny zapis tego prototypu zostanie zastąpiony.</p><div class="stack"><button id="confirm-new" class="primary">Rozpocznij nową zmianę</button><button id="cancel-new">Zachowaj zapis</button></div>','confirm');$('confirm-new').onclick=intro;$('cancel-new').onclick=menu;}
+function confirmNew(){modal('<span class="eyebrow">NOWA ZMIANA</span><h2>Zacząć od początku?</h2><p>Poprzedni lokalny zapis tego prototypu zostanie zastąpiony.</p><div class="stack"><button id="confirm-new" class="primary">Rozpocznij nową zmianę</button><button id="cancel-new">Zachowaj zapis</button></div>','confirm');$('confirm-new').onclick=()=>{startFullscreen();intro();};$('cancel-new').onclick=menu;}
 function intro(){
   state=initialState();save();phase='intro';audio.resume();
   modal('<span class="eyebrow">WIADOMOŚĆ POPRZEDNIKA</span><h2>Po trzeciej<br>tylko lokatorzy.</h2><blockquote>„Porównaj nazwisko, mieszkanie i twarz. Spis jest aktualny. Zmiennik przyjdzie rano”.</blockquote><p>Obejrzyj kartę mieszkańca i wybierz lokatora w spisie. Porównaj także zdjęcia z osobą przy szybie. Nie musisz się spieszyć.</p><p class="tiny">Telefon: dotknij dokumentów, przeciągnij scenę.<br>PC: klikaj dokumenty, przeciągaj myszą; Escape zamyka zbliżenie lub otwiera pauzę.</p><button id="begin" class="primary">Odkładam wiadomość</button>','intro');
