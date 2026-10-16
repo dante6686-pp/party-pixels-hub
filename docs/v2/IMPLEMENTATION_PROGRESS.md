@@ -79,3 +79,11 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - Production build/TypeScript and existing 37 Node tests passed. New SQL rollback suite tested history privacy (third account), spoofed owner/read marker, direct/anonymous access denial, missing friendship, removal, length, retry/conflict, unread bounds, pagination and rate limit. Pagination test caught text-sort alias bug, fixed in a follow-up migration using numeric qualified message id.
 - Advisors: six intentional private-table deny-by-default INFOs and existing leaked-password protection WARN. https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - Full signed-in browser test of new messaging remains user verification; cloud browser has no signed-in account.
+
+## 2026-10-16 — Hub application UI
+- Patryk confirmed private messages work and selected navigation/UI as next priority.
+- Four hash-addressed views: Odkrywaj, Znajomi, Wiadomości, Twój profil. Desktop sidebar, mobile bottom bar with safe-area padding, sticky account header, redesigned home/featured game/cards/social/profile surfaces.
+- Incoming-invite and unread-conversation counters reuse existing checked APIs; reset on account change. Napisz switches directly to Messages. View state works with back/forward and reload.
+- Components retain in-memory drafts when moving between hub views. Hidden message threads stop polling and never mark content read; inbox counters remain refreshed. Account recovery navigates to Profile, auth fragments are not parsed as application routes.
+- Guest social views guide to login/profile; native forms, skip link, focus outlines, reduced-motion preference and 44px controls retained.
+- No database/API changes. Production build/TypeScript and existing 37 Node tests passed. Deployed browser navigation and visual review follow; authenticated/mobile-device review remains user verification.

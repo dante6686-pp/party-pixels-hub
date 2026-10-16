@@ -9,27 +9,27 @@ async function api(owner:string,action:string,extra:Record<string,unknown>={}){
  const {data,error}=await client.rpc('pp_messages',{p_owner:owner,p_action:action,...extra}).abortSignal(AbortSignal.timeout(12000));
  if(error)throw new Error(errors[error.message]??'Brak połączenia. Spróbuj ponownie.');return data;
 }
-export default function Messages({owner,selected,onSelect}:{owner:string;selected:Profile|null;onSelect:(p:Profile|null)=>void}){
+export default function Messages({owner,selected,onSelect,active,onUnread}:{owner:string;selected:Profile|null;onSelect:(p:Profile|null)=>void;active:boolean;onUnread:(n:number)=>void}){
  const [inbox,setInbox]=useState<Conversation[]>([]),[error,setError]=useState(''),[loaded,setLoaded]=useState(false);
  const alive=useRef(true),version=useRef(0);
  const refresh=useCallback(async()=>{
   const v=++version.current;
-  try{const data=await api(owner,'inbox');if(alive.current&&v===version.current){setInbox(data);setError('');setLoaded(true);}}
+  try{const data=await api(owner,'inbox');if(alive.current&&v===version.current){setInbox(data);onUnread((data as Conversation[]).filter(p=>p.unread).length);setError('');setLoaded(true);}}
   catch(e){if(alive.current)setError(e instanceof Error?e.message:'Błąd rozmów.');}
- },[owner]);
+ },[owner,onUnread]);
  useEffect(()=>{alive.current=true;void refresh();const tick=()=>{if(!document.hidden)void refresh();};const timer=setInterval(tick,10000);window.addEventListener('focus',tick);return()=>{alive.current=false;version.current++;clearInterval(timer);window.removeEventListener('focus',tick);};},[refresh]);
  return <section className="messages" aria-labelledby="messages-title"><h2 id="messages-title">Wiadomości <span>{inbox.filter(x=>x.unread).length>0?'●':''}</span></h2>
  <p className="muted">Prywatne rozmowy z Twoją ekipą. Wybierz „Napisz” przy znajomym, aby zacząć.</p>
  {error&&<p role="status">{error} <button onClick={()=>void refresh()}>Ponów</button></p>}
  <div className="message-layout"><nav aria-label="Rozmowy">{inbox.map(p=><button key={p.player_id} aria-pressed={selected?.player_id===p.player_id} onClick={()=>onSelect(p)}><strong>{avatars[p.avatar_key]} {p.display_name}{p.unread?' · Nowa':''}</strong><small>@{p.handle}</small><span>{p.preview}</span></button>)}{loaded&&!inbox.length&&<p className="muted">Tutaj pojawią się Twoje rozmowy.</p>}</nav>
- {selected?<Thread key={owner+selected.player_id} owner={owner} peer={selected} onRead={refresh} onClose={()=>onSelect(null)}/>:<p className="muted">Wybierz rozmowę lub znajomego.</p>}</div>
+ {selected?<Thread key={owner+selected.player_id} owner={owner} peer={selected} active={active} onRead={refresh} onClose={()=>onSelect(null)}/>:<p className="muted">Wybierz rozmowę lub znajomego.</p>}</div>
  </section>;
 }
-function Thread({owner,peer,onRead,onClose}:{owner:string;peer:Profile;onRead:()=>Promise<void>;onClose:()=>void}){
+function Thread({owner,peer,onRead,onClose,active}:{owner:string;peer:Profile;active:boolean;onRead:()=>Promise<void>;onClose:()=>void}){
  const [messages,setMessages]=useState<Message[]>([]),[body,setBody]=useState(''),[notice,setNotice]=useState(''),[canSend,setCanSend]=useState(false),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[more,setMore]=useState(false),[olderBusy,setOlderBusy]=useState(false),[pending,setPending]=useState<{id:string;body:string}|null>(null);
  const alive=useRef(true),locked=useRef(false),loading=useRef(false),lastRead=useRef('0'),scroll=useRef<HTMLDivElement>(null),nearBottom=useRef(true);
  const load=useCallback(async()=>{
-  if(loading.current)return;loading.current=true;
+  if(!active||loading.current)return;loading.current=true;
   try{const data=await api(owner,'history',{p_peer:peer.player_id});if(!alive.current)return;
    const rows=data.messages as Message[];setCanSend(data.can_send);setLoaded(true);
    setMessages(old=>{
@@ -40,15 +40,15 @@ function Thread({owner,peer,onRead,onClose}:{owner:string;peer:Profile;onRead:()
    if(rows.length===50)setMore(true);
   }catch(e){if(alive.current)setNotice(e instanceof Error?e.message:'Nie udało się odczytać rozmowy.');}
   finally{loading.current=false;}
- },[owner,peer.player_id]);
+ },[owner,peer.player_id,active]);
  useEffect(()=>{alive.current=true;void load();const tick=()=>{if(!document.hidden)void load();};const timer=setInterval(tick,5000);window.addEventListener('focus',tick);document.addEventListener('visibilitychange',tick);return()=>{alive.current=false;clearInterval(timer);window.removeEventListener('focus',tick);document.removeEventListener('visibilitychange',tick);};},[load]);
  useEffect(()=>{
   if(nearBottom.current&&scroll.current)scroll.current.scrollTop=scroll.current.scrollHeight;
   const last=messages.at(-1)?.id;
-  if(last&&last!==lastRead.current&&nearBottom.current&&!document.hidden&&document.hasFocus()){
+  if(active&&last&&last!==lastRead.current&&nearBottom.current&&!document.hidden&&document.hasFocus()){
    void api(owner,'read',{p_peer:peer.player_id,p_read:last}).then(()=>{if(alive.current){lastRead.current=last;void onRead();}}).catch(()=>{});
   }
- },[messages,owner,peer.player_id,onRead]);
+ },[messages,owner,peer.player_id,onRead,active]);
  async function older(){
   if(olderBusy||!messages.length)return;setOlderBusy(true);
   try{const data=await api(owner,'history',{p_peer:peer.player_id,p_before:messages[0].id});if(!alive.current)return;
