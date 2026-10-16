@@ -85,7 +85,7 @@ export default function GameHost() {
     return()=>{
       document.body.style.overflow=oldOverflow;document.removeEventListener('fullscreenchange',changed);document.removeEventListener('visibilitychange',hidden);
       if(document.fullscreenElement)void document.exitFullscreen().catch(()=>{});
-      
+
     };
   },[]);
   useEffect(()=>{send({type:'input',mode});},[mode]);

@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useRef,useState,type FormEvent} from 'react';
 import {createPlatformClient,type GameId,type Session,type Receipt} from '@party-pixels/sdk';
 import {getClient,avatars,type Profile} from '../lib/client';
+import {profileHref} from './profile-card';
 import {FavoriteButton} from './player-library';
 import {recordPlayed} from '../lib/library';
 type Best={game_id:GameId;value:number;unit:string;attempts:number;verification_status:string};
@@ -93,7 +94,7 @@ export default function Arcade({profile}:{profile:Profile}) {
       {session.gameId==='quick-math'&&Array.isArray(session.challenge)?<form onSubmit={answer}><fieldset disabled={busy||!!pending}>{session.challenge.map((q,i)=><div className="math-row" key={i}><label htmlFor={'answer'+i}>{q.a} + {q.b} =</label><input id={'answer'+i} name={'answer'+i} type="number" inputMode="numeric" min="0" max="999" step="1" required/></div>)}<button className="primary" type="submit">{busy?'Zapisuję…':'Sprawdź odpowiedzi'}</button></fieldset></form>:<button className="clock-button" onClick={clock} disabled={busy||!!pending}>{running?'STOP':'START'}</button>}
       {!pending&&<button className="text-button" disabled={busy} onClick={()=>{setSession(null);setRunning(false);}}>Opuść rundę</button>}
     </div>}
-    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=><section className="game-card" key={id} aria-label={'Ranking '+titles[id]}><h3>{titles[id]} — top 5</h3>{rankings[id].length?<ol>{rankings[id].map((row,i,all)=>{const first=all.findIndex(r=>r.value===row.value)+1;return <li key={row.player_id} value={first}>@{row.handle} · {row.value}{id==='quick-math'?' pkt':' ms błędu'}</li>;})}</ol>:<p>Jeszcze bez wyników.</p>}<small>{id==='quick-math'?'Więcej punktów = lepszy wynik.':'Mniejszy błąd = lepszy wynik. Ranking niezweryfikowany.'}</small></section>)}</div>
+    <div className="game-grid">{(['quick-math','two-seconds'] as GameId[]).map(id=><section className="game-card" key={id} aria-label={'Ranking '+titles[id]}><h3>{titles[id]} — top 5</h3>{rankings[id].length?<ol>{rankings[id].map((row,i,all)=>{const first=all.findIndex(r=>r.value===row.value)+1;return <li key={row.player_id} value={first}><a href={profileHref(row.handle)}>@{row.handle}</a> · {row.value}{id==='quick-math'?' pkt':' ms błędu'}</li>;})}</ol>:<p>Jeszcze bez wyników.</p>}<small>{id==='quick-math'?'Więcej punktów = lepszy wynik.':'Mniejszy błąd = lepszy wynik. Ranking niezweryfikowany.'}</small></section>)}</div>
     {receipt&&<p className="score-receipt">{receipt.gameId==='quick-math'?`${receipt.value} / 5 poprawnych odpowiedzi`:`${receipt.value} ms od celu`} · {receipt.verificationStatus==='validated'?'odpowiedzi sprawdzone':'czas niezweryfikowany'}</p>}
     {message&&<p className="notice" role="status">{message}</p>}
     {pending&&<><button className="primary" disabled={busy} onClick={()=>void submit(pending)}>{busy?'Zapisuję…':'Ponów zapis tego wyniku'}</button><button className="text-button" disabled={busy} onClick={()=>{setPending(null);setSession(null);setMessage('Opuściłeś próbę. Wynik bez potwierdzenia nie jest oznaczony jako zapisany.');}}>Opuść próbę</button></>}

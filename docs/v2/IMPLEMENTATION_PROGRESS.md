@@ -105,3 +105,14 @@ Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev.
 - MAGAZYN AUTO no longer requests landscape orientation or asks users to rotate. Removed orientation-lock capability from frame/CSP. Phone portrait camera uses wider FOV and steeper view; portrait HUD places objective at top, compact status/minimap below, thumb controls at bottom, adapted short portrait layout and safe areas.
 - Updated GAME_PLAYER and shared product/designer guidance: portrait is the default priority for new mobile games; PC and optional landscape layouts remain supported.
 - No database changes. Build/TypeScript and 37 tests passed, including full campaign/geometry/frame protocol tests. GPU gameplay and actual phone layout remain user verification because cloud WebGL is disabled.
+
+## 2026-10-16 — Public player profiles and explicit editing
+- Own Profile defaults to a read-only player page using the same ProfileCard as public /u/[handle] routes. Banner, avatar, display name, @handle and bio are visible; only owner has Edit button.
+- Edytuj profil opens form, save returns to preview, cancel discards avatar/form changes. Initial profile creation and password recovery retain their forms. Added loading/error handling before owner profile edit to prevent replacing an unread profile.
+- Bio limit 280 characters; four curated CSS banner themes (orbit/arcade/forest/sunset); existing four emoji avatars. No image upload/storage in this milestone.
+- Public route reads explicit public fields only, with missing/error/retry states. Private library remains only in signed-in owner's Profile/Library views; public pages do not fetch it or private chats.
+- Avatar/name links now open profiles in friend lists/search/invitations, inbox list, thread header, incoming message author and score rankings. Inbox identity link and Open conversation button are separate controls, no nested links/buttons.
+- Migration adds bio/banner_key with constraints and column-specific authenticated insert/update grants under existing owner RLS. Existing profiles get empty bio/orbit banner.
+- SQL rollback test passed: owner edits, cross-account mutation denied, bio length/banner allowlist, public anonymous read and anonymous write denial. No fixture accounts remain. Existing 37 Node tests passed.
+- Final clean production build/TypeScript passed. A malformed local Turbopack cache was moved aside and rebuilt; no source work discarded. Advisors unchanged: private RLS deny-by-default INFO and prior leaked-password protection WARN. https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Browser public page and authenticated owner edit flow verification follow; cloud browser does not have an authenticated account.

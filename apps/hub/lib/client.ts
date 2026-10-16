@@ -9,4 +9,4 @@ export function getClient() {
   return client;
 }
 export const avatars = {ghost: '👻', bolt: '⚡', cat: '🐱', planet: '🪐'} as const;
-export type Profile = {player_id: string; handle: string; display_name: string; avatar_key: keyof typeof avatars};
+export type Profile = {player_id: string; handle: string; display_name: string; avatar_key: keyof typeof avatars; bio?:string; banner_key?:'orbit'|'arcade'|'forest'|'sunset'};

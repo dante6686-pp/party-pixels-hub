@@ -7,6 +7,7 @@ import Arcade from './arcade';
 import GameLibrary from './game-library';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
+import ProfileCard,{banners,profileHref} from './profile-card';
 
 type View = 'games'|'library'|'friends'|'messages'|'profile';
 const views:View[]=['games','library','friends','messages','profile'];
@@ -23,6 +24,9 @@ export default function Home() {
   },[]);
   useEffect(()=>{document.title=viewNames[view]+' · Party Pixels';},[view]);
   const [user, setUser] = useState<User | null>(null);
+  const [editing,setEditing]=useState(false);
+  const [profileLoading,setProfileLoading]=useState(false);
+  const [profileError,setProfileError]=useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mode, setMode] = useState<Mode>('login');
   const [loading, setLoading] = useState(true);
@@ -56,14 +60,15 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    setProfile(null);
+    setProfile(null);setEditing(false);setProfileError(false);setProfileLoading(!!user);
     setAvatar('ghost');
     if (!user) return;
     const supabase = getClient();
     if (!supabase) return;
-    void supabase.from('profiles').select('player_id,handle,display_name,avatar_key').eq('player_id', user.id).maybeSingle().then(({data,error}) => {
+    void supabase.from('profiles').select('player_id,handle,display_name,avatar_key,bio,banner_key').eq('player_id', user.id).maybeSingle().then(({data,error}) => {
       if (!active) return;
-      if (error) setNotice('Nie udało się odczytać profilu. Spróbuj ponownie.');
+      setProfileLoading(false);
+      if (error) {setProfileError(true);setNotice('Nie udało się odczytać profilu. Odśwież stronę.');}
       else if (data) {setProfile(data as Profile); setAvatar(data.avatar_key as keyof typeof avatars);}
     });
     return () => {active = false;};
@@ -108,6 +113,9 @@ export default function Home() {
     const form = new FormData(event.currentTarget);
     const handle = String(form.get('handle')).trim().toLowerCase();
     const displayName = String(form.get('display_name')).trim();
+    const bio=String(form.get('bio')??'').trim();
+    const banner=String(form.get('banner_key')??'orbit') as keyof typeof banners;
+    if(bio.length>280||!Object.hasOwn(banners,banner)){setNotice('Bio: maksymalnie 280 znaków. Wybierz baner z listy.');return;}
     if (!/^[a-z0-9_]{3,20}$/.test(handle) || displayName.length < 1 || displayName.length > 40) {
       setNotice('Nick: 3–20 małych liter, cyfr lub _. Nazwa: 1–40 znaków.'); return;
     }
@@ -115,10 +123,10 @@ export default function Home() {
     try {
       const {data:authData,error:authError} = await supabase.auth.getUser();
       if (authError || authData.user?.id !== user.id) {setNotice('Sesja wygasła. Zaloguj się ponownie.'); return;}
-      const values: Profile = {player_id:user.id,handle,display_name:displayName,avatar_key:avatar};
-      const {data,error} = await supabase.from('profiles').upsert(values,{onConflict:'player_id'}).select('player_id,handle,display_name,avatar_key').single();
+      const values: Profile = {player_id:user.id,handle,display_name:displayName,avatar_key:avatar,bio,banner_key:banner};
+      const {data,error} = await supabase.from('profiles').upsert(values,{onConflict:'player_id'}).select('player_id,handle,display_name,avatar_key,bio,banner_key').single();
       if (error) {setNotice(error.code === '23505' ? 'Ten nick jest już zajęty. Wybierz inny.' : 'Nie udało się zapisać profilu. Spróbuj ponownie.'); return;}
-      setProfile(data as Profile); setNotice('Profil zapisany.');
+      setProfile(data as Profile);setEditing(false); setNotice('Profil zapisany.');
     } catch {setNotice('Brak połączenia. Spróbuj ponownie.');}
     finally {setBusy(false);}
   }
@@ -147,17 +155,20 @@ export default function Home() {
     <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games">✳ party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></header>
     <div id="hub-content" className="hub-content">
     <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section><GameLibrary owner={ready?user.id:undefined}/>{ready?<Arcade key={user.id} profile={profile}/>:<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
-    <div hidden={view!=='profile'} className="profile-view"><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
-    <section className="account" aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
-      {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading ? <p role="status">Sprawdzam sesję…</p> : user && mode !== 'password' ? <>
+    <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
+    <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
+      {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>
+        {profile&&!editing?<><ProfileCard profile={profile} onEdit={()=>{setEditing(true);setNotice('');}}/><a className="public-profile-link" href={profileHref(profile.handle)}>Otwórz publiczną stronę profilu ↗</a></>:<>
         <div className="profile-heading"><span className="avatar-preview">{avatars[avatar]}</span><div><p className="eyebrow">DOBRZE CIĘ WIDZIEĆ</p><h2>{profile?.display_name || 'Twój ruch.'}</h2></div></div>
-        <p className="muted">{profile ? 'To Twój wspólny profil Party Pixels.' : 'Wybierz nick i avatar, żeby dokończyć profil.'}</p>
+        <p className="muted">{profile ? 'Edytujesz publiczny profil gracza.' : 'Wybierz nick i avatar, żeby dokończyć profil.'}</p>
         <form onSubmit={saveProfile} key={user.id + (profile?.handle ?? '')}><fieldset disabled={busy}>
           <label htmlFor="handle">Nick gracza</label><input id="handle" name="handle" defaultValue={profile?.handle ?? ''} pattern="[a-z0-9_]{3,20}" minLength={3} maxLength={20} required autoComplete="username" aria-describedby="handle-hint"/><small id="handle-hint">3–20 małych liter, cyfr lub podkreśleń.</small>
           <label htmlFor="display_name">Wyświetlana nazwa</label><input id="display_name" name="display_name" defaultValue={profile?.display_name ?? ''} maxLength={40} required autoComplete="nickname"/>
+          <label htmlFor="bio">O mnie</label><textarea id="bio" name="bio" defaultValue={profile?.bio??''} maxLength={280} rows={4} placeholder="W co grasz? Co lubisz?"/><small>Do 280 znaków. Bio będzie widoczne dla innych.</small>
+          <label htmlFor="banner_key">Baner profilu</label><select id="banner_key" name="banner_key" defaultValue={profile?.banner_key??'orbit'}>{Object.entries(banners).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select>
           <span className="field-label" id="avatar-label">Wybierz avatar</span><div className="avatars" role="group" aria-labelledby="avatar-label">{Object.entries(avatars).map(([key,value]) => <button className={avatar === key ? 'selected' : ''} type="button" key={key} aria-label={{ghost:'Duch',bolt:'Błyskawica',cat:'Kot',planet:'Planeta'}[key]} aria-pressed={avatar === key} onClick={() => setAvatar(key as keyof typeof avatars)}>{value}</button>)}</div>
           <button className="primary" type="submit">{busy ? 'Zapisuję…' : 'Zapisz profil'} <span>→</span></button>
-        </fieldset></form><button className="text-button" disabled={busy} onClick={logout}>Wyloguj się</button>
+        </fieldset></form>{profile&&<button className="text-button" disabled={busy} onClick={()=>{setEditing(false);setAvatar(profile.avatar_key);setNotice('');}}>Anuluj edycję</button>}</>}<button className="text-button" disabled={busy} onClick={logout}>Wyloguj się</button>
       </> : <>
         <h2>{mode === 'signup' ? 'Dołącz do ekipy.' : mode === 'reset' ? 'Wracamy do gry.' : mode === 'password' ? 'Nowe hasło.' : 'Wskakuj do środka.'}</h2>
         <p className="muted">{mode === 'signup' ? 'Pierwszy krok do Twojego miejsca w Party Pixels.' : mode === 'reset' ? 'Wyślemy Ci link do ustawienia nowego hasła.' : mode === 'password' ? 'Ustaw nowe hasło do konta.' : 'Twój profil czeka. Zaloguj się, żeby go otworzyć.'}</p>
