@@ -4,7 +4,7 @@
 
 ## Zakres i stan
 
-Kod odrębnej gry w `apps/hub/public/games/nocna-portiernia/`. Nie zmieniono aplikacji huba, katalogu, infrastruktury, bazy ani hosta. Brak zleconej publikacji lub integracji.
+Kod odrębnej gry w `apps/hub/public/games/nocna-portiernia/`. Nie zmieniono aplikacji huba, katalogu, infrastruktury, bazy ani hosta. Patryk zatwierdził osobny, stale aktualizowany podgląd do testów; integracja i dodanie do katalogu huba pozostają osobnym zleceniem.
 
 Prototyp obejmuje pierwsze dwie wizyty (Jan Wrona i Teresa Mazur), jedną proceduralną scenę Three.js, ograniczony obrót kamery, fikcyjną kartę mieszkańca i spis sześciu lokatorów. Zdjęcia powstają z tych samych modeli co goście. Kontrola nazwiska/mieszkania/twarzy, obejrzenie dokumentów w pierwszej wizycie, blokada decyzji w przejściach, widoczna liczba naruszeń, podsumowanie dwóch wizyt, restart z potwierdzeniem, pauza, lokalny checkpoint i opcjonalny fullscreen.
 
@@ -52,3 +52,13 @@ Pełna pula: 48/48 testów Node zaliczonych; składnia trzech modułów prezenta
 Podgląd przeglądarkowy zablokowany przez środowisko: `sites-preview start` kończy się `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`; status potwierdza zatrzymany podgląd. Nie uruchamiano alternatywnego serwera ani nie obchodzono ograniczenia. Nie wykonano wizualnego QA, pomiarów FPS ani testu rzeczywistego WebGL, dotyku, audio/fullscreen w przeglądarce.
 
 Do potwierdzenia na Androidzie w pionie i PC: czytelność twarzy/karty/spisu, widoczność obu dokumentów, kadrowanie sceny, klik/gest i przeciąganie, portret/poziom/resize, brak przypadkowych decyzji, pauza i dźwięk, odmowa fullscreen, przerwanie i wznowienie zapisu. Celem jest zrozumienie obu decyzji bez pomocy. Animacje podania/oglądania karty i skinienie Jana są uproszczone; oprawa dźwiękowa prototypowa. Kolejny etap: poprawki po wizualnym teście, potem wizyty 3–8 i pełne zakończenia.
+
+## Podgląd na telefonie — aktualizacja 16.10.2026
+
+[Nocna portiernia — prywatny podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site)
+
+Otwórz samodzielnie w Chrome na telefonie. Jeżeli pojawi się logowanie ChatGPT, użyj tego samego konta właściciela. Nie instaluj niczego. To dwie wizyty z zapisem wyłącznie w tej przeglądarce i pod tym adresem; bez synchronizacji z hubem.
+
+Rutynowe aktualizowanie tego podglądu podczas dalszej pracy jest zatwierdzone przez Patryka. Zachowuj adres i projekt Sites `appgprj_6ad28f60ccc08191a07a9bf1eb3b59e5` (owner-private). Lokalny checkout pakietu: `/workspace/sites/nocna-portiernia-test`; gdy nie istnieje, odtwórz źródło tego samego projektu zgodnie z Sites skill. Kod gry rozwijaj w GitHub; do pakietu kopiuj katalog gry i istniejący vendor Three.js z licencją. Pakiet root przekierowuje do `/games/nocna-portiernia/index.html`. Nie zmieniaj przypadkowo katalogu ani wdrożenia huba.
+
+Usługa potwierdziła succeeded: deployment `appgdep_6ad28f9404d88191959d5186c49fcfcd`, commit pakietu `18a23830dd3f1186934f69970876089f22f47cbb` z kodu gry `734e81260983f5e1b7d768af471f30b0785dd975`. Nie jest to dowód testu dotyku/WebGL. Ograniczenia QA opisane wyżej pozostają aktualne.
