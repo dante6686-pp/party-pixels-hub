@@ -46,3 +46,11 @@ Dodano katalog i `/play/magazyn-auto`: widok aplikacji, żądanie fullscreen z p
 Weryfikacja przed wdrożeniem: 28 testów Node i produkcyjny build Next przeszły. Podgląd wewnętrzny renderuje stronę, ale nie hydratuje kodu klienta — kontrola przeglądarkowa rozgrywki wymaga wdrożenia dev. Nie oznaczamy jeszcze całego M1 ani testu fizycznego telefonu jako zaliczonych.
 
 Wdrożenie pierwszego buildu: commit GitHub 9e7668cadfe1cccc8f6f51662d28d01aa72cb298, Vercel dpl_41aUmaWHtoZMkkf9dEYAFe3EHvTs READY z aliasem party-pixels-hub-v2-dev.vercel.app. Przeglądarka potwierdziła start hosta, gościa, iframe i pobranie modułów 3D. Jej GPU/WebGL jest wyłączone (GL_VENDOR / GL_RENDERER Disabled), więc nie potwierdzono renderowania ani rzeczywistego ruchu. Poprawiono propagowanie wczesnego błędu grafiki do hosta i dodano test; końcowy build i 29 testów przechodzą. Fizyczny Android/iOS i PC, wielodotyk i ponowne wczytanie checkpointu konta pozostają do testu.
+
+## 2026-10-16 — checkpointy na koncie i czytelność kampanii
+
+Patryk zaliczył wcześniejszy test telefonu („wszystko działa elegancko”). Następnie zgłosił powtarzalne dostawy; kod i test pełnej kampanii potwierdzają 3 misje oraz pętlę dostaw po ukończeniu. Dodano oznaczenia misji/wolnej jazdy, przegląd 3 etapów, informację o następnym celu i świadomy start nowej kampanii.
+
+Zastosowano migrację 20261016170318_game_checkpoints w izolowanym Supabase dev. Prywatny zapis konta, kontrola auth.uid i oczekiwanego właściciela, CAS/revision, idempotencja, lokalna kolejka pending, wykrywanie konfliktu między urządzeniami, retry i bezpieczny import lokalnego slotu konta. Gość pozostaje lokalny. Brak nagród/rankingu na podstawie checkpointu.
+
+37 testów Node, test SQL z rollback i build przeszły. Testy dwóch instancji kontrolera oraz odczytu po drugim wywołaniu RPC potwierdzają przenośność zapisu; rzeczywisty telefon→PC po nowym wdrożeniu wymaga jeszcze potwierdzenia. Advisors: trzy INFO o celowym deny-by-default prywatnych tabel oraz WARN auth_leaked_password_protection (ustawienie Auth poza zakresem tej migracji; https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection ).

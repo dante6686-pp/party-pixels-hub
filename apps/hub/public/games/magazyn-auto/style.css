@@ -14,3 +14,5 @@ body.playing .platform-player{display:none}
  header{padding-top:7px}.wordmark{display:none}.top-actions{margin-left:auto}.status-panel{top:62px;right:max(18px,env(safe-area-inset-right))}.minimap-panel{top:16px;left:max(18px,env(safe-area-inset-left));width:102px}.mission-panel{top:14px;width:min(260px,36vw)}.compass{top:117px}.arrest{top:155px}.joystick{width:96px;height:96px}.action{min-width:50px;min-height:50px}.radio{bottom:24px;max-width:39vw;min-width:180px}.radio>p{font-size:10px}.modal{padding:12px}.modal-card{padding:16px 22px;max-height:100%;overflow-y:auto}.modal-card h2{font-size:27px;margin:9px 0}.modal-card>p{margin-bottom:10px}.modal-card .primary{min-height:44px}.text-btn{min-height:34px;margin-top:7px}.toast{top:56%}
 }
 @media(max-width:600px) and (orientation:portrait){.mission-panel{top:225px}.minimap-panel{top:78px}.status-panel{top:78px}.compass{top:200px}.radio{bottom:170px}.arrest{top:330px}}
+
+.mission-banner>span{font-size:clamp(18px,3vw,30px);line-height:1.25;max-width:80vw;margin:auto;letter-spacing:-.5px}.mission-panel>div{font-weight:700}.save-status{max-width:70vw;white-space:normal;text-align:center}

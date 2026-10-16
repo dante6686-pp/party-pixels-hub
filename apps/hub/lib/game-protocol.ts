@@ -26,12 +26,15 @@ export function acceptsHandshake(event:{source:unknown;origin:string;data:unknow
   return selectedFrame != null && event.source === selectedFrame && event.origin === 'null' && isReady(event.data);
 }
 export type FrameMessage =
+  | {type: 'progress'; mission: number}
   | {type: 'state'; state: 'menu' | 'playing' | 'paused' | 'complete' | 'busted'}
   | {type: 'input-detected'; mode: InputMode}
   | {type: 'save'; checkpoint: Checkpoint; requestId: number}
   | {type: 'error'};
 export function frameMessage(value: unknown): FrameMessage | null {
   if (!record(value)) return null;
+  if(value.type==='progress' && Number.isInteger(value.mission) && (value.mission as number)>=0 && (value.mission as number)<=3)
+    return {type:'progress',mission:value.mission as number};
   if (value.type === 'error') return {type: 'error'};
   if (value.type === 'input-detected' && (value.mode === 'touch' || value.mode === 'keyboard'))
     return {type: 'input-detected', mode: value.mode};
@@ -45,4 +48,7 @@ export function frameMessage(value: unknown): FrameMessage | null {
 }
 export function saveKey(playerId: string | null): string {
   return `party-pixels:save:v1:${GAME.id}:${playerId ?? 'guest'}`;
+}
+export function campaignTitle(mission:number):string {
+  return mission>=3?'Kampania ukończona · Wolna jazda':`Kampania · Misja ${mission+1}/3`;
 }
