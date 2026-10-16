@@ -80,3 +80,11 @@ Gość przedstawia „Podane informacje” i „Przedstawione zdjęcie”; prawd
 57/57 testów Node zaliczonych: nowy zakres kontrolera/reduced-motion i kołysania, regresja reguł/zapisu/fullscreen oraz geometria kadru ze skrajnymi kątami. To testy symulowane, nie WebGL/dotyk ani ocena wyglądu na urządzeniu. Potrzebny test odczucia ruchu, podpisów, pustego spisu i czytelności na telefonie.
 
 Ten sam [prywatny podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site), succeeded: `appgdep_6ad29ed5fc608191b04fffe527dabb7d`, pakiet Sites `291a4f17f428f50ca3051a5d90916ce4861794b6`. Nadal dwuwizytowy prototyp poza katalogiem huba.
+
+## Wejście gościa i etapowe UI — 17.10.2026
+
+Na bezpośrednie polecenie Patryka: najpierw podejście gościa (1,35 s), potem UI i tekst wypowiedzi, po dalszej 1 s fade-in podanych informacji. Przejścia opacity 1,1 s; reduced-motion wyłącza je bez zmiany kolejności. Po pierwszym gościu UI zostaje przez resztę aktywnej zmiany. Kolejna wizyta czyści wyłącznie poprzednią wypowiedź i informacje oraz powtarza ich opóźnienia. Na starcie nowej zmiany/wznowienia z menu UI czeka na pierwszego napotkanego gościa. Rezerwacja layoutu ogranicza przeskoki kadru. Kontrolki są niedostępne przed ukończeniem prezentacji, a tutorial nadal wymaga rzeczywistej widoczności dokumentów. Pauza zatrzymuje odliczanie; menu/restart anulują je. Reguły i checkpoint bez zmian.
+
+Kod `77234f4735ce7fb9bf38dc7c006fe6472d059687`, 59/59 testów Node, w tym dwa nowe testy sekwencji i regresja dotychczasowego kontrolera. Odczyt GitHuba potwierdzony. Wygląd CSS fade, WebGL i fizyczny dotyk pozostają testem urządzenia. Zapis dla designera znajduje się w rozdziale 25 wspólnego GDD.
+
+Ten sam [podgląd](https://nocna-portiernia-test.aglowheron10.chatgpt.site), deployment `appgdep_6ad2a1c52ea88191b28e8baddc591d57` succeeded; pakiet `c47ae975823486c16145b40759e9e3877d7d8f9c`. Nadal poza katalogiem huba.
