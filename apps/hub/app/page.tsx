@@ -4,6 +4,7 @@ import {useEffect, useState, type FormEvent} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {getClient, avatars, type Profile} from '../lib/client';
 import Arcade from './arcade';
+import GameLibrary from './game-library';
 
 type Mode = 'login' | 'signup' | 'reset' | 'password';
 export default function Home() {
@@ -118,6 +119,7 @@ export default function Home() {
 
   return <main>
     <header><a className="brand" href="/" aria-label="Party Pixels — strona główna"><span className="brand-icon">✳</span>party<span>pixels</span><sup>2.0</sup></a><span className="dev-label">WCZESNA WERSJA</span></header>
+    <GameLibrary/>
     <div className="columns"><section className="intro"><p className="eyebrow"><i/> MAŁE GRY. WIELKIE EMOCJE.</p><h1>Najlepsze chwile?<br/>Te <span>razem.</span></h1><p className="lead">Jedno konto na wszystkie Twoje przyszłe rozgrywki. Wybierz swój nick, znajdź swój styl i przygotuj się na Party Pixels.</p>
       <div className="pixel-art" aria-hidden="true"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="mascot">👾</div><span className="spark s1">✦</span><span className="spark s2">+</span><span className="spark s3">✳</span><div className="sticker">PLAYER ONE<br/><b>THAT’S YOU.</b></div></div>
       <p className="footnote">Budujemy nowe Party Pixels. Gry i funkcje społecznościowe pojawią się w kolejnych etapach.</p></section>

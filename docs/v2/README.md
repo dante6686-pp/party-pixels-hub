@@ -74,3 +74,5 @@ To samo konto uruchamia dwie gry. Obie wyświetlają ten sam nick i avatar. Każ
 - IMPLEMENTATION_BACKLOG.md — kolejność zadań z kryteriami ukończenia.
 
 Dokumenty operacyjne i instrukcje wewnętrznych GPT są przechowywane oddzielnie od publicznej dokumentacji technicznej.
+
+- [Odtwarzacz gier i pierwsza gra 3D](GAME_PLAYER.md) — layouty, fullscreen, sterowanie, izolacja i lokalne checkpointy.

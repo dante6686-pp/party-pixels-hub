@@ -38,3 +38,9 @@ Próba utworzenia osobnego Preview Vercel `party-pixels-hub-v2-dev` została odr
 Patryk zatwierdził publikację i sam skonfigurował osobny projekt Vercel po błędzie 403 konektora. Wersja konta d0600cf została wdrożona: https://party-pixels-hub-v2-dev.vercel.app/ . HTTP 200 i formularze potwierdzono w przeglądarce. To adres developerski, choć środowisko Vercel nazywa się Production; stary hub pozostaje osobnym projektem.
 
 Dodano następnie wspólny adapter SDK, gry `quick-math` i `two-seconds`, rekordy profilu oraz rankingi top 5. Migracja dev i testy bazy przeszły; szczegóły i ograniczenia w `GAMES_M1.md`. Pełny test konta z pocztą i zalogowanej rozgrywki nadal jest otwarty. Brak izolacji gier na osobnym originie. Nie oznaczać całego M1 jako ukończonego.
+
+## 2026-10-16 — odtwarzacz i pierwsza gra 3D
+
+Dodano katalog i `/play/magazyn-auto`: widok aplikacji, żądanie fullscreen z przycisku Graj, fallback viewport, dotyk/klawiatura/Auto, responsywny canvas, safe-area, układ telefonu poziomo, pauza i powrót do huba. Przeniesiono kod MAGAZYN AUTO z potwierdzonego źródła Sites, bez zmian w oryginalnym opublikowanym projekcie. Iframe ma opaque origin, kontrolowany handshake i ograniczony MessagePort; do gry nie trafiają tokeny konta. Checkpointy lokalne, rozdzielone profile/gość, z potwierdzeniem zapisu; brak synchronizacji chmurowej i rankingu tej gry. Szczegóły: GAME_PLAYER.md.
+
+Weryfikacja przed wdrożeniem: 28 testów Node i produkcyjny build Next przeszły. Podgląd wewnętrzny renderuje stronę, ale nie hydratuje kodu klienta — kontrola przeglądarkowa rozgrywki wymaga wdrożenia dev. Nie oznaczamy jeszcze całego M1 ani testu fizycznego telefonu jako zaliczonych.
