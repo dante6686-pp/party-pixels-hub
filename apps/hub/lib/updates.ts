@@ -4,6 +4,7 @@ export type HubUpdate = {id:string; date:string; category:UpdateCategory; title:
 // Public release notes only. Keep stable IDs and list newest releases first,
 // including the editorial order of releases published on the same day.
 export const updates: readonly HubUpdate[] = [
+ {id:'2026-10-17-12',date:'2026-10-17',category:'Profile',title:'Nowe tła Twojego profilu',description:'Wybierz jedną z trzech ilustracji w edycji profilu: Nocna zmiana, Złota szychta lub Szybka runda. Przełączane sekcje huba otwierają się teraz od góry.'},
  {id:'2026-10-17-11',date:'2026-10-17',category:'Nowość',title:'Twój dobry początek',description:'Starter Challenge to sześć zadań bez terminu. Odbieraj Piksele, XP i ozdoby profilu. Zdobyte odznaki możesz wyróżnić przy awatarze.'},
  {id:'2026-10-17-10',date:'2026-10-17',category:'Gry',title:'Szybka piątka we dwoje',description:'Zaproś znajomego do pojedynku, potwierdźcie gotowość i rozwiążcie te same pięć działań. Po rundzie zobaczycie wynik i możecie wybrać rewanż.'},
  {id:'2026-10-17-09',date:'2026-10-17',category:'Gry',title:'Gry mają nowe oblicze',description:'Cztery nowe ilustracje czekają w katalogu i Twojej bibliotece. Na stronie każdej gry zobaczysz też jej własną oprawę w tle.'},

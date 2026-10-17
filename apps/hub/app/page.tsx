@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState, type FormEvent} from 'react';
+import {useEffect, useLayoutEffect, useState, type FormEvent} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {getClient, avatars, type Profile} from '../lib/client';
 import GameLibrary from './game-library';
@@ -10,7 +10,7 @@ import {usePresence} from './player-extras';
 import PlayerLibrary from './player-library';
 import PlayAgain from './play-again';
 import Friends from './friends';
-import ProfileCard,{banners} from './profile-card';
+import ProfileCard,{banners,bannerImages,bannerKey} from './profile-card';
 import BrandMark from './brand-mark';
 import {StarterShortcut} from './starter/starter';
 
@@ -27,6 +27,13 @@ export default function Home() {
     const sync=()=>{const hash=window.location.hash.slice(1);if(/^chat\/[a-z0-9_]{3,20}$/.test(hash)){setView('messages');}else if(views.includes(hash as View))setView(hash as View);else if(['arcade-quick-math','arcade-two-seconds'].includes(hash)){window.location.replace('/play/'+hash.slice(7));}};
     sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);
   },[]);
+  useEffect(()=>{const previous=history.scrollRestoration;history.scrollRestoration='manual';return()=>{history.scrollRestoration=previous;};},[]);
+  useLayoutEffect(()=>{
+    // Section panels share the document scroller; leave inner chat scroll untouched.
+    window.scrollTo({top:0,left:0,behavior:'instant'});
+    const frame=requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));
+    return()=>cancelAnimationFrame(frame);
+  },[view]);
   useEffect(()=>{document.title=viewNames[view]+' · Party Pixels';},[view]);
   const [user, setUser] = useState<User | null>(null);
   const [editing,setEditing]=useState(false);
@@ -173,7 +180,7 @@ export default function Home() {
           <label htmlFor="handle">Nick gracza</label><input id="handle" name="handle" defaultValue={profile?.handle ?? ''} pattern="[a-z0-9_]{3,20}" minLength={3} maxLength={20} required autoComplete="username" aria-describedby="handle-hint"/><small id="handle-hint">3–20 małych liter, cyfr lub podkreśleń.</small>
           <label htmlFor="display_name">Wyświetlana nazwa</label><input id="display_name" name="display_name" defaultValue={profile?.display_name ?? ''} maxLength={40} required autoComplete="nickname"/>
           <label htmlFor="bio">O mnie</label><textarea id="bio" name="bio" defaultValue={profile?.bio??''} maxLength={280} rows={4} placeholder="W co grasz? Co lubisz?"/><small>Do 280 znaków. Bio będzie widoczne dla innych.</small>
-          <label htmlFor="banner_key">Baner profilu</label><select id="banner_key" name="banner_key" defaultValue={profile?.banner_key??'orbit'}>{Object.entries(banners).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select>
+          <fieldset className="cover-picker"><legend>Wybierz tło profilu</legend><div>{Object.entries(banners).map(([key,label])=><label className="cover-option" key={key}><input type="radio" name="banner_key" value={key} defaultChecked={bannerKey(profile?.banner_key)===key}/><img src={bannerImages[key as keyof typeof banners]} alt="" width={1536} height={512}/><span>{label}</span></label>)}</div><small>Wybrane tło pojawi się po zapisaniu profilu.</small></fieldset>
           <span className="field-label" id="avatar-label">Wybierz avatar</span><div className="avatars" role="group" aria-labelledby="avatar-label">{Object.entries(avatars).map(([key,value]) => <button className={avatar === key ? 'selected' : ''} type="button" key={key} aria-label={{ghost:'Duch',bolt:'Błyskawica',cat:'Kot',planet:'Planeta'}[key]} aria-pressed={avatar === key} onClick={() => setAvatar(key as keyof typeof avatars)}>{value}</button>)}</div>
           <button className="primary" type="submit">{busy ? 'Zapisuję…' : 'Zapisz profil'} <span>→</span></button>
         </fieldset></form>{profile&&<button className="text-button" disabled={busy} onClick={()=>{setEditing(false);setAvatar(profile.avatar_key);setNotice('');}}>Anuluj edycję</button>}</>}<button className="text-button" disabled={busy} onClick={logout}>Wyloguj się</button>
