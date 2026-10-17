@@ -1,7 +1,7 @@
 import type {NextConfig} from 'next';
 const config:NextConfig={
   transpilePackages:['@party-pixels/sdk'],
-  async headers(){return [{source:'/games/magazyn-auto/:path*',headers:[
+  async headers(){return [{source:'/games/:game/:path*',headers:[
     // Modules requested by the opaque sandbox origin need CORS. There is no credentialed API here.
     {key:'Access-Control-Allow-Origin',value:'*'},
     {key:'X-Content-Type-Options',value:'nosniff'},

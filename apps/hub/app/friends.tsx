@@ -2,10 +2,13 @@
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {avatars,getClient,type Profile} from '../lib/client';
 import Messages from './messages';
+import {useFriendsPresence} from './player-extras';
+import {games} from '../lib/catalog';
 import {profileHref} from './profile-card';
 type Person=Profile & {request_id:string|null;relation:'none'|'friend'|'incoming'|'outgoing'};
-const errors:Record<string,string>={CONTACT_UNAVAILABLE:'Kontakt z tym graczem jest niedostępny.',PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',PROFILE_REQUIRED:'Potwierdź e-mail i zapisz profil.',COOLDOWN:'Ponowne zaproszenie do tej osoby będzie dostępne po 24 godzinach.',FRIEND_LIMIT:'Limit: 20 wysłanych zaproszeń lub 200 znajomości i zaproszeń na konto.',STALE_REQUEST:'Zaproszenie się zmieniło. Odśwież listę.',INVALID_TRANSITION:'Stan zaproszenia się zmienił. Odśwież listę.'};
+const errors:Record<string,string>={INVITES_DISABLED:'Ten gracz nie przyjmuje zaproszeń.',CONTACT_UNAVAILABLE:'Kontakt z tym graczem jest niedostępny.',PLAYER_CHANGED:'Sesja się zmieniła. Zaloguj się ponownie.',PROFILE_REQUIRED:'Potwierdź e-mail i zapisz profil.',COOLDOWN:'Ponowne zaproszenie do tej osoby będzie dostępne po 24 godzinach.',FRIEND_LIMIT:'Limit: 20 wysłanych zaproszeń lub 200 znajomości i zaproszeń na konto.',STALE_REQUEST:'Zaproszenie się zmieniło. Odśwież listę.',INVALID_TRANSITION:'Stan zaproszenia się zmienił. Odśwież listę.'};
 export default function Friends({owner,view,onMessages,onInvites,onUnread}:{owner:string;view:string;onMessages:()=>void;onInvites:(n:number)=>void;onUnread:(n:number)=>void}){
+ const presence=useFriendsPresence(owner,view==='friends');
  const [selected,setSelected]=useState<Profile|null>(null);
  const [people,setPeople]=useState<Person[]>([]),[results,setResults]=useState<Person[]|null>(null),[query,setQuery]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState<string|null>(null);
  const alive=useRef(true),locked=useRef(false),searchRev=useRef(0),listRev=useRef(0);
@@ -52,7 +55,7 @@ export default function Friends({owner,view,onMessages,onInvites,onUnread}:{owne
  }
  function row(person:Person){
   const p=people.find(x=>x.player_id===person.player_id)??person;
-  return <li key={p.player_id} className="friend-row"><a className="friend-identity" href={profileHref(p.handle)} aria-label={'Profil gracza '+p.display_name}><span className="friend-avatar" aria-hidden="true">{avatars[p.avatar_key]??'👻'}</span><span className="friend-name"><strong>{p.display_name}</strong><small>@{p.handle}</small></span></a><div className="friend-actions">
+  return <li key={p.player_id} className="friend-row"><a className="friend-identity" href={profileHref(p.handle)} aria-label={'Profil gracza '+p.display_name}><span className="friend-avatar" aria-hidden="true">{avatars[p.avatar_key]??'👻'}</span><span className="friend-name"><strong>{p.display_name}</strong><small>@{p.handle}</small>{p.relation==='friend'&&<small className="presence-label">{!presence.available?'Status niedostępny':Object.hasOwn(presence.rows,p.player_id)?(presence.rows[p.player_id]?'● Gra: '+(games.find(g=>g.id===presence.rows[p.player_id])?.title??'Party Pixels'):'● Online'):'Offline lub status ukryty'}</small>}</span></a><div className="friend-actions">
    {p.relation==='none'&&<button disabled={busy} onClick={()=>void act('send',p)}>Zaproś</button>}
    {p.relation==='incoming'&&<><button disabled={busy} onClick={()=>void act('accept',p)}>Przyjmij</button><button disabled={busy} onClick={()=>void act('decline',p)}>Odrzuć</button></>}
    {p.relation==='outgoing'&&<><small>Wysłano</small><button disabled={busy} onClick={()=>void act('cancel',p)}>Cofnij</button></>}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111c19"><title>Nocna portiernia — prototyp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="game" data-ui-visible="false" data-dialogue-visible="false" data-info-visible="false" aria-label="Nocna portiernia">
+    <header id="hud" class="hud" inert>
+      <div class="statusbar"><span><strong id="clock">03:00</strong> · <span id="visit">Wizyta 1/2</span></span><span id="mistakes">Błędy 0/3</span><button id="instructions" aria-label="Instrukcja">?</button><button id="pause" aria-label="Otwórz pauzę">Ⅱ</button></div>
+      <p id="save-status" role="status" hidden></p>
+    </header>
+    <section id="stage" class="stage" aria-label="Okienko portierni">
+      <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <p id="input-hint" class="gesture-hint">Przeciągnij widok, aby się rozejrzeć.</p>
+    </section>
+    <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy"></p><button id="dialog-expand" hidden>Cały dialog</button></section>
+    <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
+      <section id="inspection" class="inspection" aria-label="Informacje gościa" hidden>
+        <article id="card-sheet" class="paper"><h2>Podane informacje</h2><div id="card-content"></div></article>
+      </section>
+      <section class="resident-deck" aria-label="Karty mieszkańców">
+        <div class="deck-heading"><h2>Karty mieszkańców</h2><span>↔ Przesuwaj karty</span></div>
+        <div id="resident-carousel" class="resident-carousel" tabindex="0" role="region" aria-label="Karty mieszkańców. Przesuwaj palcem, przeciągaj myszą lub użyj strzałek w lewo i w prawo."></div>
+      </section>
+      <p id="tutorial" class="hint" role="status">Porównaj podane informacje z wpisem w spisie i twarzą gościa.</p>
+      <div class="decisions"><button id="deny" class="deny" disabled>Odmów</button><button id="allow" class="allow" disabled>Wpuść</button></div>
+    </section>
+    <section id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Menu gry"><div class="panel" id="panel"></div></section>
+    <section id="fatal" class="overlay" role="alertdialog" aria-modal="true" aria-labelledby="fatal-title" hidden><div class="panel"><span class="eyebrow">GRAFIKA 3D NIEDOSTĘPNA</span><h1 id="fatal-title">Nie udało się otworzyć portierni</h1><p id="fatal-detail">Ta przeglądarka nie udostępnia WebGL. Sprawdź akcelerację sprzętową lub otwórz grę w innej przeglądarce.</p><button onclick="location.reload()">Spróbuj ponownie</button></div></section>
+  </main>
+  <script type="module" src="main.mjs"></script>
+</body></html>

@@ -1,4 +1,5 @@
 'use client';
+import {usePresence} from '../../player-extras';
 
 import {useEffect,useRef,useState} from 'react';
 import {recordPlayed} from '../../../lib/library';
@@ -53,6 +54,7 @@ export default function GameHost() {
   const shell=useRef<HTMLDivElement>(null),iframe=useRef<HTMLIFrameElement>(null),port=useRef<MessagePort|null>(null);
   const [ready,setReady]=useState(false),[error,setError]=useState(''),[attempt,setAttempt]=useState(0);
   const [started,setStarted]=useState(false),[state,setState]=useState<State>('menu');
+  usePresence(player?.playerId,started?'magazyn-auto':undefined);
   const [choice,setChoice]=useState<Choice>('auto'),[detected,setDetected]=useState<InputMode>('keyboard');
   const [full,setFull]=useState(false),[canFullscreen,setCanFullscreen]=useState(false);
   const [hasSave,setHasSave]=useState(false),[notice,setNotice]=useState('');

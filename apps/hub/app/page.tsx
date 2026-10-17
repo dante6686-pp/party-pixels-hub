@@ -6,6 +6,7 @@ import {getClient, avatars, type Profile} from '../lib/client';
 import GameLibrary from './game-library';
 import WhatsNewCarousel from './whats-new-carousel';
 import Notifications from './notifications';
+import {usePresence} from './player-extras';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
 import {BlockedPlayers} from './profile-actions';
@@ -146,6 +147,7 @@ export default function Home() {
   }
 
   const ready=!!user&&profile?.player_id===user.id&&mode!=='password';
+  usePresence(ready?user.id:undefined);
   return <main className="hub">
     <a href="#hub-content" className="skip-link">Przejdź do treści</a>
     <aside className="hub-sidebar">
@@ -160,7 +162,7 @@ export default function Home() {
     <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>
-        {profile&&!editing?<><ProfileCard profile={profile} onEdit={()=>{setEditing(true);setNotice('');}}/><a className="public-profile-link" href={profileHref(profile.handle)}>Otwórz publiczną stronę profilu ↗</a></>:<>
+        {profile&&!editing?<><ProfileCard profile={profile} onEdit={()=>{setEditing(true);setNotice('');}}/><a className="profile-edit" href="/settings">Ustawienia konta ⚙</a><a className="public-profile-link" href={profileHref(profile.handle)}>Otwórz publiczną stronę profilu ↗</a></>:<>
         <div className="profile-heading"><span className="avatar-preview">{avatars[avatar]}</span><div><p className="eyebrow">DOBRZE CIĘ WIDZIEĆ</p><h2>{profile?.display_name || 'Twój ruch.'}</h2></div></div>
         <p className="muted">{profile ? 'Edytujesz publiczny profil gracza.' : 'Wybierz nick i avatar, żeby dokończyć profil.'}</p>
         <form onSubmit={saveProfile} key={user.id + (profile?.handle ?? '')}><fieldset disabled={busy}>

@@ -4,9 +4,11 @@ import type {User} from '@supabase/supabase-js';
 import type {GameId} from '@party-pixels/sdk';
 import {getClient,type Profile} from '../../../lib/client';
 import Arcade from '../../arcade';
+import {usePresence} from '../../player-extras';
 const titles={'quick-math':'Szybka piątka','two-seconds':'Złap 2 sekundy'};
 export default function NativePlayer({gameId}:{gameId:GameId}){
  const [user,setUser]=useState<User|null>(null),[profile,setProfile]=useState<Profile|null>(null),[loading,setLoading]=useState(true),[profileLoading,setProfileLoading]=useState(false),[error,setError]=useState('');
+ usePresence(user?.id,gameId);
  const shell=useRef<HTMLDivElement>(null);
  useEffect(()=>{
   const client=getClient();if(!client){setLoading(false);setError('Nie udało się połączyć z kontem.');return;}
