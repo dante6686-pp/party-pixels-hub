@@ -7,5 +7,5 @@ export const games=[
 export type CatalogGame=typeof games[number];
 export function filterGames(query:string,dimension:string,mode:string,category:string){
  const term=query.trim().toLocaleLowerCase('pl-PL');
- return games.filter(g=>(!term||(g.title+' '+g.subtitle+' '+g.description).toLocaleLowerCase('pl-PL').includes(term))&&(dimension==='all'||g.dimension===dimension)&&(mode==='all'||g.mode===mode)&&(category==='all'||g.category===category));
+ return games.filter(g=>(!term||(g.title+' '+g.subtitle+' '+g.description).toLocaleLowerCase('pl-PL').includes(term))&&(dimension==='all'||g.dimension===dimension)&&(mode==='all'||g.mode===mode||(mode==='multiplayer'&&g.id==='quick-math'))&&(category==='all'||g.category===category));
 }

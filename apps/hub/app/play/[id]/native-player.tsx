@@ -27,6 +27,6 @@ export default function NativePlayer({gameId}:{gameId:GameId}){
  async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await shell.current?.requestFullscreen?.();}catch{setError('Pełny ekran systemowy jest niedostępny. Możesz grać w tym oknie.');}}
  return <div className="native-shell" ref={shell}><header className="native-toolbar"><a href="/#games">← Hub</a><strong>{titles[gameId]}</strong><button onClick={()=>void fullscreen()} aria-label="Przełącz pełny ekran">⛶</button></header><main className="native-content">
  {loading||profileLoading?<p role="status">Wczytuję konto gracza…</p>:user&&profile?.player_id===user.id?<Arcade key={user.id+gameId} profile={profile} gameId={gameId}/>:<section className="native-login"><span aria-hidden="true">✳</span><h1>{titles[gameId]}</h1><p>{user?'Uzupełnij profil, aby rozpocząć rozgrywkę.':'Zaloguj się, aby grać i zapisywać wyniki.'}</p><a className="primary" href="/#profile">Przejdź do konta <span>→</span></a><a className="text-button" href={'/game/'+gameId}>O grze</a></section>}
- {error&&<p role="status" className="notice">{error}</p>}
+ {gameId==='quick-math'&&<a className="news-back" href="/duel">Zagraj ze znajomym — pojedynek →</a>}{error&&<p role="status" className="notice">{error}</p>}
  </main></div>;
 }
