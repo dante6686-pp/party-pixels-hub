@@ -8,6 +8,7 @@ import WhatsNewCarousel from './whats-new-carousel';
 import Notifications from './notifications';
 import {usePresence} from './player-extras';
 import PlayerLibrary from './player-library';
+import PlayAgain from './play-again';
 import Friends from './friends';
 import ProfileCard,{banners} from './profile-card';
 
@@ -45,19 +46,21 @@ export default function Home() {
     if (!supabase) {setLoading(false); return;}
     let active = true;
     let revision = 0;
+    let authTimeout:number|undefined;
     // The auth callback only updates identity. Profile queries run in a separate effect.
     const {data: {subscription}} = supabase.auth.onAuthStateChange((event, session) => {
       revision++;
       if (!active) return;
-      setUser(session?.user ?? null);
+      window.clearTimeout(authTimeout);setUser(session?.user ?? null);
       setLoading(false);
       if (event === 'PASSWORD_RECOVERY') setMode('password');
     });
+    authTimeout=window.setTimeout(()=>{if(active){setLoading(false);setNotice('Sprawdzenie sesji trwa zbyt długo. Spróbuj odświeżyć stronę.');}},10000);
     const initialRevision = revision;
     void supabase.auth.getUser().then(({data}) => {
-      if (active && revision === initialRevision) {setUser(data.user); setLoading(false);}
+      if (active && revision === initialRevision) {window.clearTimeout(authTimeout);setUser(data.user); setLoading(false);}
     }).catch(() => {if (active) {setLoading(false); setNotice('Nie udało się sprawdzić sesji. Odśwież stronę.');}});
-    return () => {active = false; subscription.unsubscribe();};
+    return () => {active = false;window.clearTimeout(authTimeout); subscription.unsubscribe();};
   }, []);
 
   useEffect(() => {
@@ -67,12 +70,12 @@ export default function Home() {
     if (!user) return;
     const supabase = getClient();
     if (!supabase) return;
-    void supabase.from('profiles').select('player_id,handle,display_name,avatar_key,bio,banner_key').eq('player_id', user.id).maybeSingle().then(({data,error}) => {
+    void Promise.resolve(supabase.from('profiles').select('player_id,handle,display_name,avatar_key,bio,banner_key').eq('player_id', user.id).abortSignal(AbortSignal.timeout(10000)).maybeSingle()).then(({data,error}) => {
       if (!active) return;
       setProfileLoading(false);
       if (error) {setProfileError(true);setNotice('Nie udało się odczytać profilu. Odśwież stronę.');}
       else if (data) {setProfile(data as Profile); setAvatar(data.avatar_key as keyof typeof avatars);}
-    });
+    }).catch(()=>{if(active){setProfileLoading(false);setProfileError(true);}});
     return () => {active = false;};
   }, [user?.id]);
 
@@ -157,7 +160,7 @@ export default function Home() {
     </aside>
     <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games">✳ party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><div className="hub-account-tools">{ready&&<Notifications key={user.id} owner={user.id} invites={invites} unread={unread}/>}<a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></div></header>
     <div id="hub-content" className="hub-content">
-    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'Dobre chwile?'}<br/><span>Zaczynają się tutaj.</span></h1><p>Wskocz do gry, znajdź swoją ekipę i zostań na jeszcze jedną rundę.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section><WhatsNewCarousel/><GameLibrary owner={ready?user.id:undefined}/>{!ready&&<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
+    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'W co dziś gramy?'}</h1><p>Graj bez konta. Z kontem masz ulubione, znajomych i wyniki w obsługiwanych grach.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section>{ready&&<PlayAgain key={user.id} owner={user.id} active={view==='games'}/>}<WhatsNewCarousel/><GameLibrary owner={ready?user.id:undefined}/>{!ready&&<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
     <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>

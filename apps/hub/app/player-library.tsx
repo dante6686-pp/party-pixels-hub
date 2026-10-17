@@ -8,16 +8,16 @@ type Entry={game_id:LibraryGame;favorite:boolean;last_played_at:string|null};
 type Library={games:Entry[];checkpoint:{mission:number;updated_at:string}|null};
 const catalog=games.map(g=>({...g,detail:g.subtitle}));
 export default function PlayerLibrary({owner,active}:{owner:string;active:boolean}){
- const [data,setData]=useState<Library|null>(null),[filter,setFilter]=useState<'favorites'|'recent'>('favorites'),[notice,setNotice]=useState(''),[busy,setBusy]=useState<LibraryGame|null>(null);
+ const [data,setData]=useState<Library|null>(null),[filter,setFilter]=useState<'favorites'|'recent'>('favorites'),[notice,setNotice]=useState(''),[fetching,setFetching]=useState(false),[busy,setBusy]=useState<LibraryGame|null>(null);
  const alive=useRef(true),version=useRef(0),locked=useRef(false);
  const refresh=useCallback(async()=>{
   if(locked.current)return;
-  const client=getClient();if(!client)return;const v=++version.current;
+  const client=getClient();if(!client){setNotice('Biblioteka jest chwilowo niedostępna. Spróbuj ponownie.');return;}const v=++version.current;setFetching(true);
   try{
    const {data,error}=await client.rpc('pp_library',{p_owner:owner,p_action:'get'}).abortSignal(AbortSignal.timeout(10000));
    if(!alive.current||v!==version.current)return;
    if(error)throw error;setData(data);setNotice('');
-  }catch{if(alive.current&&v===version.current)setNotice('Nie udało się odświeżyć biblioteki. Spróbuj ponownie.');}
+  }catch{if(alive.current&&v===version.current)setNotice('Nie udało się odświeżyć biblioteki. Spróbuj ponownie.');}finally{if(alive.current&&v===version.current)setFetching(false);}
  },[owner]);
  useEffect(()=>{
   alive.current=true;if(active)void refresh();
@@ -40,18 +40,18 @@ export default function PlayerLibrary({owner,active}:{owner:string;active:boolea
  const favoriteCount=data?.games.filter(g=>g.favorite).length??0;
  const rows=catalog.filter(g=>(filter==='favorites'?data?.games.find(e=>e.game_id===g.id)?.favorite:data?.games.find(e=>e.game_id===g.id)?.last_played_at)).sort((a,b)=>filter==='recent'?Date.parse(data?.games.find(e=>e.game_id===b.id)?.last_played_at??'1970-01-01')-Date.parse(data?.games.find(e=>e.game_id===a.id)?.last_played_at??'1970-01-01'):0);
  return <section className="player-library" aria-labelledby="player-library-title">
- <div className="library-heading"><div><p className="eyebrow">TWOJE GRY. ZAWSZE POD RĘKĄ.</p><h2 id="player-library-title">Twoja biblioteka.</h2></div><button className="library-refresh" onClick={()=>void refresh()}>Odśwież</button></div>
+ <div className="library-heading"><div><p className="eyebrow">TWOJE GRY. ZAWSZE POD RĘKĄ.</p><h2 id="player-library-title">Twoja biblioteka.</h2></div><button className="library-refresh" disabled={fetching} onClick={()=>void refresh()}>{fetching?'Wczytuję…':notice?'Spróbuj ponownie':'Odśwież'}</button></div>
  {data?.checkpoint&&data.games.some(g=>g.game_id==='magazyn-auto'&&(g.favorite||g.last_played_at))&&<a className="continue-card" href="/play/magazyn-auto"><span className="continue-symbol" aria-hidden="true">↗</span><div><small>WRÓĆ DO ROZGRYWKI</small><strong>MAGAZYN AUTO</strong><p>{data.checkpoint.mission>=3?'Kampania ukończona · Wolna jazda':'Zapis kampanii · Misja '+(data.checkpoint.mission+1)+'/3'}</p></div><b>Kontynuuj →</b></a>}
  <div className="library-filters" role="group" aria-label="Filtr biblioteki">{(['favorites','recent'] as const).map(f=><button key={f} aria-pressed={filter===f} onClick={()=>setFilter(f)}>{f==='favorites'?'★ Ulubione · '+favoriteCount:'Ostatnio grane'}</button>)}</div>
  {notice&&<p role="status" className="notice">{notice}</p>}
- {!data?<p role="status" className="muted">Wczytuję bibliotekę…</p>:rows.length?<div className="personal-game-grid">{rows.map(g=>{const entry=data.games.find(e=>e.game_id===g.id);return <article className={'personal-game personal-'+g.id} key={g.id}><GameCover game={g} compact/><div className="personal-game-top"><span aria-hidden="true">{g.symbol}</span><h3><a className="personal-card-link" href={'/game/'+g.id}>{g.title}</a></h3><button disabled={busy!==null} aria-pressed={!!entry?.favorite} aria-label={(entry?.favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+g.title} onClick={()=>void favorite(g.id)}>{busy===g.id?'…':entry?.favorite?'★':'☆'}</button></div><p>{g.detail}</p>{entry?.last_played_at&&<small>Ostatnio: {new Date(entry.last_played_at).toLocaleDateString('pl-PL')}</small>}</article>;})}</div>:<div className="library-empty"><strong>{filter==='favorites'?'Zostaw tu swoich faworytów.':'Jeszcze jedna runda?'}</strong><p>{filter==='favorites'?'Dodaj grę gwiazdką w Odkrywaj, a pojawi się tutaj.':'Uruchom grę — pojawi się tutaj po rozpoczęciu rozgrywki.'}</p><a className="library-discover" href="#games">Przejdź do Odkrywaj ↗</a></div>}
+ {!data?(notice?<a className="library-discover" href="#games">Odkrywaj gry ↗</a>:<p role="status" className="muted">Wczytuję bibliotekę…</p>):rows.length?<div className="personal-game-grid">{rows.map(g=>{const entry=data.games.find(e=>e.game_id===g.id);return <article className={'personal-game personal-'+g.id} key={g.id}><GameCover game={g} compact/><a className="whole-card-link" href={'/game/'+g.id} aria-label={g.title}/><div className="personal-game-top"><button disabled={busy!==null} aria-pressed={!!entry?.favorite} aria-label={(entry?.favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+g.title} onClick={()=>void favorite(g.id)}>{busy===g.id?'…':entry?.favorite?'★':'☆'}</button></div><p>{g.detail}</p>{entry?.last_played_at&&<small>Ostatnio: {new Date(entry.last_played_at).toLocaleDateString('pl-PL')}</small>}</article>;})}</div>:<div className="library-empty"><strong>{filter==='favorites'?'Zostaw tu swoich faworytów.':'Jeszcze jedna runda?'}</strong><p>{filter==='favorites'?'Dodaj grę gwiazdką w Odkrywaj, a pojawi się tutaj.':'Uruchom grę — pojawi się tutaj po rozpoczęciu rozgrywki.'}</p><a className="library-discover" href="#games">Przejdź do Odkrywaj ↗</a></div>}
  <small className="library-note">Ulubione i ostatnio grane są wspólne dla Twojego konta. „Kontynuuj” korzysta z zapisu kampanii; krótkie gry rozpoczynają nową rundę.</small>
  </section>;
 }
 
 
 export function FavoriteButton({owner,game,title}:{owner?:string;game:LibraryGame;title:string}){
- const [favorite,setFavorite]=useState(false),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [favorite,setFavorite]=useState(false),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[attempt,setAttempt]=useState(0);
  const alive=useRef(true),locked=useRef(false),version=useRef(0);
  useEffect(()=>{
   alive.current=true;setFavorite(false);setLoaded(false);
@@ -59,11 +59,11 @@ export function FavoriteButton({owner,game,title}:{owner?:string;game:LibraryGam
    if(!owner||locked.current)return;const v=++version.current;const client=getClient();if(!client)return;
    try{const {data,error}=await client.rpc('pp_library',{p_owner:owner,p_action:'get'}).abortSignal(AbortSignal.timeout(10000));
     if(alive.current&&v===version.current){if(error){setNotice('Nie udało się odczytać ulubionych. Odśwież stronę.');return;}setFavorite(!!data.games.find((g:Entry)=>g.game_id===game)?.favorite);setLoaded(true);}
-   }catch{}
+   }catch{if(alive.current&&v===version.current)setNotice('Nie udało się odczytać ulubionych. Spróbuj ponownie.');}
   };
   void refresh();window.addEventListener('party-pixels:library',refresh);window.addEventListener('focus',refresh);
   return()=>{alive.current=false;version.current++;window.removeEventListener('party-pixels:library',refresh);window.removeEventListener('focus',refresh);};
- },[owner,game]);
+ },[owner,game,attempt]);
  if(!owner)return <a href="#profile" className="catalog-favorite guest-favorite" aria-label={'Zaloguj się, aby dodać do ulubionych: '+title}><span aria-hidden="true">☆</span></a>;
  async function toggle(){
   if(locked.current)return;locked.current=true;version.current++;setBusy(true);setNotice('');
@@ -72,5 +72,5 @@ export function FavoriteButton({owner,game,title}:{owner?:string;game:LibraryGam
   }catch{if(alive.current)setNotice('Nie potwierdzono zapisu. Spróbuj ponownie.');}
   finally{locked.current=false;if(alive.current)setBusy(false);}
  }
- return <div className="catalog-star-wrap"><button type="button" className="catalog-favorite" disabled={busy||!loaded} aria-pressed={favorite} aria-label={(favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+title} onClick={()=>void toggle()}><span aria-hidden="true">{busy||!loaded?'…':favorite?'★':'☆'}</span></button>{notice&&<small role="status">{notice}</small>}</div>;
+ return <div className="catalog-star-wrap"><button type="button" className="catalog-favorite" disabled={busy||!loaded} aria-pressed={favorite} aria-label={(favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+title} onClick={()=>void toggle()}><span aria-hidden="true">{busy||!loaded?'…':favorite?'★':'☆'}</span></button>{notice&&<small role="status">{notice}{!loaded&&<button type="button" onClick={()=>{setNotice('');setAttempt(n=>n+1);}}>Spróbuj ponownie</button>}</small>}</div>;
 }
