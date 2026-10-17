@@ -8,7 +8,7 @@ import {platformApi} from '../lib/platform';
 
 export default function GameCommunity({game}:{game:string}){
  const viewer=useViewer();
- return <div className="game-community"><GameRanking key={'rank-'+(viewer.owner??'guest')} game={game} owner={viewer.owner}/><GameFeedback key={viewer.owner??'guest'} game={game} owner={viewer.owner} canWrite={!!viewer.owner&&viewer.ready} authLoading={viewer.loading}/></div>;
+ return <div className="game-community">{['quick-math','two-seconds'].includes(game)&&<GameRanking key={'rank-'+(viewer.owner??'guest')} game={game} owner={viewer.owner}/>}<GameFeedback key={viewer.owner??'guest'} game={game} owner={viewer.owner} canWrite={!!viewer.owner&&viewer.ready} authLoading={viewer.loading}/></div>;
 }
 function GameRanking({game,owner}:{game:string;owner?:string}){
  const [data,setData]=useState<{rows:Rank[];mine:Rank|null}|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(false);
