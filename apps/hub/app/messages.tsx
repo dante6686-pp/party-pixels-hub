@@ -1,7 +1,8 @@
 'use client';
-import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
+import {useCallback,useEffect,useRef,useState,type FormEvent,type CSSProperties} from 'react';
 import {avatars,getClient,type Profile} from '../lib/client';
 import ReportButton from './report-button';
+import {BlockedPlayers} from './profile-actions';
 import {profileHref} from './profile-card';
 type Message={id:string;sender_id:string;body:string;created_at:string};
 type Conversation=Profile & {preview:string;unread:boolean};
@@ -25,10 +26,15 @@ export default function Messages({owner,selected,onSelect,active,onUnread}:{owne
  {error&&<p role="status">{error} <button onClick={()=>void refresh()}>Ponów</button></p>}
  <div className="message-layout"><nav aria-label="Rozmowy">{inbox.map(p=><div key={p.player_id} className="conversation-item"><a className="conversation-profile" href={profileHref(p.handle)} aria-label={'Profil gracza '+p.display_name}><strong>{avatars[p.avatar_key]} {p.display_name}</strong><small>@{p.handle}</small></a><button aria-pressed={selected?.player_id===p.player_id} onClick={()=>onSelect(p)} aria-label={'Otwórz rozmowę z '+p.display_name}><span>{p.unread?'● Nowa wiadomość · ':''}{p.preview}</span><small>Otwórz rozmowę →</small></button></div>)}{loaded&&!inbox.length&&<p className="muted">Tutaj pojawią się Twoje rozmowy.</p>}</nav>
  {selected?<Thread key={owner+selected.player_id} owner={owner} peer={selected} active={active} onRead={refresh} onClose={()=>onSelect(null)}/>:<p className="muted">Wybierz rozmowę lub znajomego.</p>}</div>
+ <BlockedPlayers owner={owner}/>
  </section>;
 }
 function Thread({owner,peer,onRead,onClose,active}:{owner:string;peer:Profile;active:boolean;onRead:()=>Promise<void>;onClose:()=>void}){
  const [messages,setMessages]=useState<Message[]>([]),[body,setBody]=useState(''),[notice,setNotice]=useState(''),[canSend,setCanSend]=useState(false),[loaded,setLoaded]=useState(false),[busy,setBusy]=useState(false),[more,setMore]=useState(false),[olderBusy,setOlderBusy]=useState(false),[pending,setPending]=useState<{id:string;body:string}|null>(null);
+ const panel=useRef<HTMLElement>(null),close=useRef(onClose);close.current=onClose;
+ useEffect(()=>{if(!active)return;const previous=document.activeElement;panel.current?.focus();const escape=(e:KeyboardEvent)=>{if(e.key==='Escape'&&!document.querySelector('dialog[open]')){e.preventDefault();close.current();}};document.addEventListener('keydown',escape);return()=>{document.removeEventListener('keydown',escape);if(previous instanceof HTMLElement&&previous.isConnected)previous.focus();};},[active]);
+ const [viewport,setViewport]=useState<{top:number;height:number}|null>(null);
+ useEffect(()=>{if(!active)return;const vv=window.visualViewport;const sync=()=>setViewport({top:vv?.offsetTop??0,height:vv?.height??window.innerHeight});sync();vv?.addEventListener('resize',sync);vv?.addEventListener('scroll',sync);window.addEventListener('resize',sync);return()=>{vv?.removeEventListener('resize',sync);vv?.removeEventListener('scroll',sync);window.removeEventListener('resize',sync);};},[active]);
  const alive=useRef(true),locked=useRef(false),loading=useRef(false),lastRead=useRef('0'),scroll=useRef<HTMLDivElement>(null),nearBottom=useRef(true);
  const load=useCallback(async()=>{
   if(!active||loading.current)return;loading.current=true;
@@ -68,13 +74,13 @@ function Thread({owner,peer,onRead,onClose,active}:{owner:string;peer:Profile;ac
   }catch(e){if(alive.current)setNotice((e instanceof Error?e.message:'Błąd wysyłania.')+' Treść zachowana. Kliknij „Ponów wysyłanie”.');}
   finally{locked.current=false;if(alive.current)setBusy(false);}
  }
- return <div className="message-thread"><div className="friends-heading"><h3><a className="thread-profile-link" href={profileHref(peer.handle)}>{avatars[peer.avatar_key]} {peer.display_name} <small>@{peer.handle} · Zobacz profil ↗</small></a></h3><button onClick={onClose}>Zamknij</button></div>
+ return <section ref={panel} tabIndex={-1} className="message-thread" aria-label={"Rozmowa z "+peer.display_name} data-active={active} style={viewport?{'--chat-top':viewport.top+'px','--chat-height':viewport.height+'px'} as CSSProperties:undefined}><div className="friends-heading"><h3><a className="thread-profile-link" href={profileHref(peer.handle)}>{avatars[peer.avatar_key]} {peer.display_name} <small>@{peer.handle} · Zobacz profil ↗</small></a></h3><button onClick={onClose}>Zamknij</button></div>
  <div className="message-history" ref={scroll} onScroll={()=>{const el=scroll.current;if(el)nearBottom.current=el.scrollHeight-el.scrollTop-el.clientHeight<80;}}>
  {more&&<button disabled={olderBusy} onClick={()=>void older()}>{olderBusy?'Wczytuję…':'Starsze wiadomości'}</button>}
  {!loaded?<p>Wczytuję rozmowę…</p>:!messages.length?<p className="muted">Napisz pierwsze „cześć” 👋</p>:messages.map(m=><article className={m.sender_id===owner?'message own':'message'} key={m.id}><small>{m.sender_id===owner?'Ty':<a href={profileHref(peer.handle)}>{peer.display_name}</a>} · {new Date(m.created_at).toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</small><p>{m.body}</p>{m.sender_id!==owner&&<ReportButton owner={owner} peer={peer.player_id} message={m.id}/>}</article>)}
- </div><p role="status" aria-live="polite">{notice}</p>
+ </div><div className="message-composer"><p role="status" aria-live="polite">{notice}</p>
  {loaded&&!canSend&&<p>Wysyłanie do tej osoby jest niedostępne. Historia rozmowy pozostaje dostępna.</p>}
- <form onSubmit={send}><label htmlFor="message-body">Twoja wiadomość</label><textarea id="message-body" value={pending?.body??body} disabled={busy||!!pending||!canSend} onChange={e=>setBody(e.target.value)} maxLength={2000} rows={3} placeholder="Napisz coś…" required/><small>{(pending?.body??body).length}/2000 · Enter: nowy wiersz</small><button type="submit" disabled={busy||!canSend||!(pending?.body??body).trim()}>{busy?'Wysyłam…':pending?'Ponów wysyłanie':'Wyślij'}</button></form>
+ <form onSubmit={send}><label htmlFor="message-body">Twoja wiadomość</label><textarea id="message-body" value={pending?.body??body} disabled={busy||!!pending||!canSend} onChange={e=>setBody(e.target.value)} maxLength={2000} rows={2} placeholder="Napisz coś…" required/><small>{(pending?.body??body).length}/2000 · Enter: nowy wiersz</small><button type="submit" disabled={busy||!canSend||!(pending?.body??body).trim()}>{busy?'Wysyłam…':pending?'Ponów wysyłanie':'Wyślij'}</button></form>
  <small>Nowe wiadomości pojawiają się co kilka sekund. Niedokończona wiadomość pozostaje tylko w tym otwartym oknie rozmowy.</small>
- </div>;
+ </div></section>;
 }

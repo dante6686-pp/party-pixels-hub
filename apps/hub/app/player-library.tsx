@@ -1,14 +1,11 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {getClient} from '../lib/client';
+import {games} from '../lib/catalog';
 import type {LibraryGame} from '../lib/library';
 type Entry={game_id:LibraryGame;favorite:boolean;last_played_at:string|null};
 type Library={games:Entry[];checkpoint:{mission:number;updated_at:string}|null};
-const catalog=[
- {id:'magazyn-auto',title:'MAGAZYN AUTO',symbol:'▰',detail:'3D · Kampania solo',href:'/play/magazyn-auto'},
- {id:'quick-math',title:'Szybka piątka',symbol:'＋',detail:'Pięć działań · Rekordy',href:'/play/quick-math'},
- {id:'two-seconds',title:'Złap 2 sekundy',symbol:'◷',detail:'Refleks · Rekordy',href:'/play/two-seconds'},
-] as const;
+const catalog=games.map(g=>({...g,detail:g.subtitle}));
 export default function PlayerLibrary({owner,active}:{owner:string;active:boolean}){
  const [data,setData]=useState<Library|null>(null),[filter,setFilter]=useState<'favorites'|'recent'>('favorites'),[notice,setNotice]=useState(''),[busy,setBusy]=useState<LibraryGame|null>(null);
  const alive=useRef(true),version=useRef(0),locked=useRef(false);
@@ -35,7 +32,7 @@ export default function PlayerLibrary({owner,active}:{owner:string;active:boolea
    if(error)throw error;if(!alive.current)return;
    setData(old=>old?{...old,games:old.games.some(e=>e.game_id===game)?old.games.map(e=>e.game_id===game?{...e,favorite:value}:e):[...old.games,{game_id:game,favorite:value,last_played_at:null}]}:old);
    window.dispatchEvent(new Event('party-pixels:library'));
-   setNotice(value?'Dodano do ulubionych.':'Usunięto z ulubionych.');
+   setNotice(value?'Dodane do ulubionych':'Usunięto z ulubionych.');
   }catch{if(alive.current)setNotice('Nie potwierdzono zmiany. Odśwież bibliotekę i spróbuj ponownie.');}
   finally{locked.current=false;if(alive.current)setBusy(null);}
  }
@@ -46,7 +43,7 @@ export default function PlayerLibrary({owner,active}:{owner:string;active:boolea
  {data?.checkpoint&&data.games.some(g=>g.game_id==='magazyn-auto'&&(g.favorite||g.last_played_at))&&<a className="continue-card" href="/play/magazyn-auto"><span className="continue-symbol" aria-hidden="true">↗</span><div><small>WRÓĆ DO ROZGRYWKI</small><strong>MAGAZYN AUTO</strong><p>{data.checkpoint.mission>=3?'Kampania ukończona · Wolna jazda':'Zapis kampanii · Misja '+(data.checkpoint.mission+1)+'/3'}</p></div><b>Kontynuuj →</b></a>}
  <div className="library-filters" role="group" aria-label="Filtr biblioteki">{(['favorites','recent'] as const).map(f=><button key={f} aria-pressed={filter===f} onClick={()=>setFilter(f)}>{f==='favorites'?'★ Ulubione · '+favoriteCount:'Ostatnio grane'}</button>)}</div>
  {notice&&<p role="status" className="notice">{notice}</p>}
- {!data?<p role="status" className="muted">Wczytuję bibliotekę…</p>:rows.length?<div className="personal-game-grid">{rows.map(g=>{const entry=data.games.find(e=>e.game_id===g.id);return <article className={'personal-game personal-'+g.id} key={g.id}><div className="personal-game-top"><span aria-hidden="true">{g.symbol}</span><button disabled={busy!==null} aria-pressed={!!entry?.favorite} aria-label={(entry?.favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+g.title} onClick={()=>void favorite(g.id)}>{busy===g.id?'…':entry?.favorite?'★':'☆'}</button></div><h3>{g.title}</h3><p>{g.detail}</p>{entry?.last_played_at&&<small>Ostatnio: {new Date(entry.last_played_at).toLocaleDateString('pl-PL')}</small>}<a href={'/game/'+g.id}>{g.id==='magazyn-auto'?'Otwórz grę':'Przejdź do gry'} <span>↗</span></a></article>;})}</div>:<div className="library-empty"><strong>{filter==='favorites'?'Zostaw tu swoich faworytów.':'Jeszcze jedna runda?'}</strong><p>{filter==='favorites'?'Dodaj grę gwiazdką w Odkrywaj, a pojawi się tutaj.':'Uruchom grę — pojawi się tutaj po rozpoczęciu rozgrywki.'}</p><a className="library-discover" href="#games">Przejdź do Odkrywaj ↗</a></div>}
+ {!data?<p role="status" className="muted">Wczytuję bibliotekę…</p>:rows.length?<div className="personal-game-grid">{rows.map(g=>{const entry=data.games.find(e=>e.game_id===g.id);return <article className={'personal-game personal-'+g.id} key={g.id}><div className="personal-game-top"><span aria-hidden="true">{g.symbol}</span><h3><a className="personal-card-link" href={'/game/'+g.id}>{g.title}</a></h3><button disabled={busy!==null} aria-pressed={!!entry?.favorite} aria-label={(entry?.favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+g.title} onClick={()=>void favorite(g.id)}>{busy===g.id?'…':entry?.favorite?'★':'☆'}</button></div><p>{g.detail}</p>{entry?.last_played_at&&<small>Ostatnio: {new Date(entry.last_played_at).toLocaleDateString('pl-PL')}</small>}</article>;})}</div>:<div className="library-empty"><strong>{filter==='favorites'?'Zostaw tu swoich faworytów.':'Jeszcze jedna runda?'}</strong><p>{filter==='favorites'?'Dodaj grę gwiazdką w Odkrywaj, a pojawi się tutaj.':'Uruchom grę — pojawi się tutaj po rozpoczęciu rozgrywki.'}</p><a className="library-discover" href="#games">Przejdź do Odkrywaj ↗</a></div>}
  <small className="library-note">Ulubione i ostatnio grane są wspólne dla Twojego konta. „Kontynuuj” korzysta z zapisu kampanii; krótkie gry rozpoczynają nową rundę.</small>
  </section>;
 }
@@ -66,13 +63,13 @@ export function FavoriteButton({owner,game,title}:{owner?:string;game:LibraryGam
   void refresh();window.addEventListener('party-pixels:library',refresh);window.addEventListener('focus',refresh);
   return()=>{alive.current=false;version.current++;window.removeEventListener('party-pixels:library',refresh);window.removeEventListener('focus',refresh);};
  },[owner,game]);
- if(!owner)return <a href="#profile" className="catalog-favorite guest-favorite" aria-label={'Zaloguj się, aby dodać do ulubionych: '+title}>☆ <span>Zapisz grę</span></a>;
+ if(!owner)return <a href="#profile" className="catalog-favorite guest-favorite" aria-label={'Zaloguj się, aby dodać do ulubionych: '+title}><span aria-hidden="true">☆</span></a>;
  async function toggle(){
   if(locked.current)return;locked.current=true;version.current++;setBusy(true);setNotice('');
   try{const {error}=await getClient()!.rpc('pp_library',{p_owner:owner,p_action:'favorite',p_game:game,p_favorite:!favorite}).abortSignal(AbortSignal.timeout(10000));if(error)throw error;
-   if(alive.current){setFavorite(!favorite);window.dispatchEvent(new Event('party-pixels:library'));setNotice(favorite?'Usunięto z ulubionych.':'Dodano do ulubionych.');}
+   if(alive.current){setFavorite(!favorite);window.dispatchEvent(new Event('party-pixels:library'));setNotice(favorite?'Usunięto z ulubionych.':'Dodane do ulubionych');}
   }catch{if(alive.current)setNotice('Nie potwierdzono zapisu. Spróbuj ponownie.');}
   finally{locked.current=false;if(alive.current)setBusy(false);}
  }
- return <div className="catalog-star-wrap"><button type="button" className="catalog-favorite" disabled={busy||!loaded} aria-pressed={favorite} aria-label={(favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+title} onClick={()=>void toggle()}>{busy||!loaded?'…':favorite?'★':'☆'} <span>{favorite?'W ulubionych':'Zapisz grę'}</span></button>{notice&&<small role="status">{notice}</small>}</div>;
+ return <div className="catalog-star-wrap"><button type="button" className="catalog-favorite" disabled={busy||!loaded} aria-pressed={favorite} aria-label={(favorite?'Usuń z ulubionych: ':'Dodaj do ulubionych: ')+title} onClick={()=>void toggle()}><span aria-hidden="true">{busy||!loaded?'…':favorite?'★':'☆'}</span></button>{notice&&<small role="status">{notice}</small>}</div>;
 }

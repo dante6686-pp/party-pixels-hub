@@ -4,6 +4,7 @@ export type HubUpdate = {id:string; date:string; category:UpdateCategory; title:
 // Public release notes only. Keep stable IDs and list newest releases first,
 // including the editorial order of releases published on the same day.
 export const updates: readonly HubUpdate[] = [
+ {id:'2026-10-17-08',date:'2026-10-17',category:'Usprawnienie',title:'Mniej klikania, więcej miejsca',description:'Otwieraj gry całym kafelkiem, zapisuj je gwiazdką przy tytule i korzystaj z kompaktowych przycisków profilu. W rozmowie pole pisania pozostaje pod ręką.'},
  {id:'2026-10-17-07',date:'2026-10-17',category:'Gry',title:'Nocna zmiana czeka',description:'Nocna portiernia dołącza do katalogu jako demo dwóch wizyt. Graj w pionie na telefonie lub na PC. Postęp zapisuje się na tym urządzeniu.'},
  {id:'2026-10-17-06',date:'2026-10-17',category:'Społeczność',title:'Rozmowa trwa dalej',description:'Odpowiadaj na komentarze pod grami. Dzwonek pokaże nowe odpowiedzi i przeniesie Cię prosto do wątku.'},
  {id:'2026-10-17-05',date:'2026-10-17',category:'Profile',title:'Odznaki za Twoje pierwsze kroki',description:'Profil, pierwsza runda, znajomość, komentarz i idealna piątka mają swoje odznaki. Zdobywasz je podczas korzystania z huba.'},

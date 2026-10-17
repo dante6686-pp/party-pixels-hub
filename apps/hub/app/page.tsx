@@ -9,8 +9,7 @@ import Notifications from './notifications';
 import {usePresence} from './player-extras';
 import PlayerLibrary from './player-library';
 import Friends from './friends';
-import {BlockedPlayers} from './profile-actions';
-import ProfileCard,{banners,profileHref} from './profile-card';
+import ProfileCard,{banners} from './profile-card';
 
 type View = 'games'|'library'|'friends'|'messages'|'profile';
 const views:View[]=['games','library','friends','messages','profile'];
@@ -162,7 +161,7 @@ export default function Home() {
     <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>
-        {profile&&!editing?<><ProfileCard profile={profile} onEdit={()=>{setEditing(true);setNotice('');}}/><a className="profile-edit" href="/settings">Ustawienia konta ⚙</a><a className="public-profile-link" href={profileHref(profile.handle)}>Otwórz publiczną stronę profilu ↗</a></>:<>
+        {profile&&!editing?<><ProfileCard profile={profile} onEdit={()=>{setEditing(true);setNotice('');}}/></>:<>
         <div className="profile-heading"><span className="avatar-preview">{avatars[avatar]}</span><div><p className="eyebrow">DOBRZE CIĘ WIDZIEĆ</p><h2>{profile?.display_name || 'Twój ruch.'}</h2></div></div>
         <p className="muted">{profile ? 'Edytujesz publiczny profil gracza.' : 'Wybierz nick i avatar, żeby dokończyć profil.'}</p>
         <form onSubmit={saveProfile} key={user.id + (profile?.handle ?? '')}><fieldset disabled={busy}>
@@ -189,8 +188,7 @@ export default function Home() {
       <div className="card-bottom"><span className="dot"/> JEDEN PROFIL. TWOJE PARTY PIXELS.</div>
     </section></div></div>
     <div hidden={view!=='library'&&view!=='profile'}>{ready?<PlayerLibrary key={user.id} owner={user.id} active={view==='library'||view==='profile'}/>:view==='library'&&<section className="social-gate"><span aria-hidden="true">▥</span><h1>Twoje gry, po Twojemu.</h1><p>Zaloguj się i zapisuj ulubione gry. Tutaj znajdziesz też ostatnie rozgrywki.</p><a href="#profile" className="primary">Przejdź do profilu ↗</a></section>}</div>
-    {ready&&view==='profile'&&<BlockedPlayers key={user.id} owner={user.id}/>}
-    {ready?<Friends key={user.id} owner={user.id} view={view} onMessages={()=>navigate('messages')} onInvites={setInvites} onUnread={setUnread}/>:<div hidden={view!=='friends'&&view!=='messages'} className="social-gate"><span aria-hidden="true">{view==='friends'?'♧':'▤'}</span><h1>{view==='friends'?'Twoja ekipa czeka.':'Porozmawiajmy.'}</h1><p>{loading?'Sprawdzam Twoje konto…':user?'Zapisz profil, aby korzystać z funkcji społecznościowych.':'Zaloguj się, aby dodawać znajomych i wymieniać wiadomości.'}</p><a className="primary" href="#profile">Przejdź do profilu <span>↗</span></a></div>}
+        {ready?<Friends key={user.id} owner={user.id} view={view} onMessages={()=>navigate('messages')} onInvites={setInvites} onUnread={setUnread}/>:<div hidden={view!=='friends'&&view!=='messages'} className="social-gate"><span aria-hidden="true">{view==='friends'?'♧':'▤'}</span><h1>{view==='friends'?'Twoja ekipa czeka.':'Porozmawiajmy.'}</h1><p>{loading?'Sprawdzam Twoje konto…':user?'Zapisz profil, aby korzystać z funkcji społecznościowych.':'Zaloguj się, aby dodawać znajomych i wymieniać wiadomości.'}</p><a className="primary" href="#profile">Przejdź do profilu <span>↗</span></a></div>}
     <footer><span>© Party Pixels 2026</span><span>Made for good times.</span></footer>
     </div></div>
   </main>;
