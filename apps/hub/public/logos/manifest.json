@@ -1,0 +1,50 @@
+[
+  {
+    "id": "GFX-005",
+    "game": "nocna-portiernia",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1R7TYhMckdi-f01kUhfFypShk3440ihgA/view",
+    "source_sha256": "48e48d990241a601fa5ed6c46924fd4cc155d0e175dbbe9c85b29de5bffc6963",
+    "file": "/logos/nocna-portiernia-v01.webp",
+    "width": 512,
+    "height": 512,
+    "bytes": 84732,
+    "sha256": "9b9e84df3cbc8184682258929c9b2e5a6d98852562aabdeaa4eef17f69a00c3d"
+  },
+  {
+    "id": "GFX-006",
+    "game": "magazyn-auto",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/19Gpku1XUpOHCMAwNO5Kw-6Xddd0AdwUl/view",
+    "source_sha256": "a76debcaea8e09cda7ad59210e557ac1d03cce98d534a638530f2d860688e0a8",
+    "file": "/logos/magazyn-auto-v01.webp",
+    "width": 512,
+    "height": 512,
+    "bytes": 71998,
+    "sha256": "b94e9b2a18c76f40c13033b341aed2d4d130d9e6f9ce5a03b43d94979998d785"
+  },
+  {
+    "id": "GFX-007",
+    "game": "quick-math",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1-KlRk-_Mq4LtFyUdRPGLtpxmeFvYPwIK/view",
+    "source_sha256": "b051d16f4f2ded9b15e0f2e75da479dd27b72e3ded13042cbca1f0c8d9d14afa",
+    "file": "/logos/quick-math-v01.webp",
+    "width": 512,
+    "height": 512,
+    "bytes": 60304,
+    "sha256": "c72dc6f9251e065c150ee9649a8f8b3becb0124ff5ddc8c3d5f0700b78abeaff"
+  },
+  {
+    "id": "GFX-008",
+    "game": "two-seconds",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1Exxf4Lani1l9uOqtaS3pLagg03Kwu3ma/view",
+    "source_sha256": "75565f9ebbade63b344855cb1422d13e52e986ec593f80b63b4fda8308209966",
+    "file": "/logos/two-seconds-v01.webp",
+    "width": 512,
+    "height": 512,
+    "bytes": 65842,
+    "sha256": "1f0d6d82eab274dff414e13bb463cfb0832487a8b1421579bd00aaf21d114926"
+  }
+]
