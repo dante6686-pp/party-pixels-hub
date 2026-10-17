@@ -1,0 +1,46 @@
+[
+  {
+    "id": "GFX-001",
+    "game": "nocna-portiernia",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1aOB9syxH7pGNq6EDFGdGB9rBP1g9RaTz/view",
+    "source_sha256": "71656c50963834192a0e37f0a383961f22f21c32bbb621e5369f823e3502d8e3",
+    "file": "/covers/nocna-portiernia-v01.webp",
+    "width": 1536,
+    "height": 1024,
+    "web_sha256": "bc2834610f3e64fd80f753ffa5558f8809e42e1a1d0fa9573bf422ebbd7ce92f"
+  },
+  {
+    "id": "GFX-002",
+    "game": "magazyn-auto",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1xUVYFHPOfcVtNHbvu-iSDexBJLLRWWoX/view",
+    "source_sha256": "f88c4e5a3577234ce75d7798ba91ad69a723e4ee74003f1c853cb511ea2bdf6f",
+    "file": "/covers/magazyn-auto-v01.webp",
+    "width": 1536,
+    "height": 1024,
+    "web_sha256": "70a06361cfbcfe2bb5477bac2fe99f61396ab016ce1e076ad4cb9bc5cb00661f"
+  },
+  {
+    "id": "GFX-003",
+    "game": "quick-math",
+    "version": "v01",
+    "source": "https://drive.google.com/file/d/1NNiTCtbWjFGNOw4kM3BEqiTgYRALr751/view",
+    "source_sha256": "d4a0de8a5a3dd37452d4bd4d3dc7d177cf4af15d0cd5745d041c2fc08e10dca9",
+    "file": "/covers/quick-math-v01.webp",
+    "width": 1536,
+    "height": 1024,
+    "web_sha256": "552b256bec67a15c776d980b7ddd489141218e8d4b71c95adbe63f2c935a537c"
+  },
+  {
+    "id": "GFX-004",
+    "game": "two-seconds",
+    "version": "v02",
+    "source": "https://drive.google.com/file/d/1z02VHuJvjAgPUYDDyCHbznMAcDDldD7D/view",
+    "source_sha256": "8ea8bda9c4fef6c6802ffd7a8aa0e7eba1f1e070359b75cfd89bddf211ad412c",
+    "file": "/covers/two-seconds-v02.webp",
+    "width": 1536,
+    "height": 1024,
+    "web_sha256": "2897636ec56154126bc385f19ee925e15e89c3c934358cbb5ba46db66b458225"
+  }
+]
