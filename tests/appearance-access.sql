@@ -1,0 +1,22 @@
+begin;
+select set_config('request.jwt.claim.sub',(select player_id::text from pp_private.style_editors limit 1),true);
+set local role authenticated;
+do $$declare snap jsonb; changed jsonb; restored jsonb;begin
+ snap:=public.pp_appearance('get');
+ changed:=public.pp_appearance('publish',(snap->>'revision')::bigint,jsonb_set(snap->'settings','{titleSize}','23'));
+ if changed->'settings'->>'titleSize'<>'23' then raise exception 'PUBLISH_FAILED';end if;
+ begin perform public.pp_appearance('publish',(snap->>'revision')::bigint,snap->'settings');raise exception 'STALE_ACCEPTED';exception when others then if sqlerrm<>'REVISION_CONFLICT' then raise;end if;end;
+ begin perform public.pp_appearance('publish',(changed->>'revision')::bigint,jsonb_set(snap->'settings','{titleSize}','999'));raise exception 'INVALID_ACCEPTED';exception when others then if sqlerrm<>'INVALID_SETTINGS' then raise;end if;end;
+ restored:=public.pp_appearance('restore',(changed->>'revision')::bigint,null,(snap->>'revision')::bigint);
+ if restored->'settings' is distinct from snap->'settings' then raise exception 'RESTORE_FAILED';end if;
+ begin update public.hub_appearance set revision=99;raise exception 'DIRECT_WRITE_ACCEPTED';exception when insufficient_privilege then null;end;
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub',coalesce((select player_id::text from public.profiles where player_id not in(select player_id from pp_private.style_editors) limit 1),'00000000-0000-0000-0000-000000000001'),true);
+set local role authenticated;
+do $$begin begin perform public.pp_appearance('get');raise exception 'NON_EDITOR_ACCEPTED';exception when others then if sqlerrm<>'EDITOR_REQUIRED' then raise;end if;end;end $$;
+reset role;
+set local role anon;
+select revision,settings from public.hub_appearance;
+do $$begin begin perform public.pp_appearance('get');raise exception 'ANON_ACCEPTED';exception when insufficient_privilege then null;end;end $$;
+rollback;
