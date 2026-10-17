@@ -22,3 +22,9 @@ export function validCheckpoint(s, expectedLimit = null) {
   const ending = mistakes >= 3 ? 'failed' : s.nextVisitIndex === s.limit ? (s.limit === 8 ? 'survived' : 'prototype') : null;
   return s.mistakes === mistakes && s.ending === ending;
 }
+
+// Copy validated demo history into the full game; never trust or mutate the legacy slot.
+export function upgradePrototypeCheckpoint(data){
+  if(!validCheckpoint(data,PROTOTYPE_LIMIT))return null;
+  return data.decisions.reduce((state,answer,index)=>decide(state,index,answer),initialState(visits.length));
+}

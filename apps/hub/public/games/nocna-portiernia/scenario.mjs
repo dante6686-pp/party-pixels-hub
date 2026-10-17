@@ -1,6 +1,7 @@
 // Source: GDD v1.0, 16.10.2026. Keep scenario data separate from presentation.
 export const SCENARIO_VERSION = 'nocna-portiernia-1.0';
-export const PROTOTYPE_LIMIT = 2;
+export const PROTOTYPE_LIMIT = 2; // Historical demo: only for checkpoint migration/tests.
+export const GAME_LIMIT = 8;
 export const residents = [
   { id:'jan', name:'Jan Wrona', flat:4, feature:'Łysina i szeroki siwy wąs' },
   { id:'teresa', name:'Teresa Mazur', flat:7, feature:'Kręcone włosy i okrągłe okulary' },

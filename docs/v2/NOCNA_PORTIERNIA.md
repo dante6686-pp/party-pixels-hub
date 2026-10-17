@@ -1,47 +1,40 @@
-# Nocna portiernia — prototyp A
+# Nocna portiernia — pełna gra v1
 
-Źródło projektu: [GDD v1.0](https://docs.google.com/document/d/1oyYlC_X3huLJtyzAsr_7DxwtnrXZWLuUK4sUQh95o60/edit), odczyt 16.10.2026. Gałąź robocza: `feat/nocna-portiernia-prototype`.
+Źródło: [GDD v1.0 i kolejne korekty](https://docs.google.com/document/d/1oyYlC_X3huLJtyzAsr_7DxwtnrXZWLuUK4sUQh95o60/edit). Patryk potwierdził testy poprawionego UI 17.10.2026 i zlecił ukończenie wszystkich wizyt i zakończeń. Gałąź: `feat/nocna-portiernia-prototype` (zachowana nazwa gałęzi).
 
-## Zakres i stan
+## Aktualny zakres — 18.10.2026
 
-Kod odrębnej gry w `apps/hub/public/games/nocna-portiernia/`. Nie zmieniono aplikacji huba, katalogu, infrastruktury, bazy ani hosta. Patryk zatwierdził osobny, stale aktualizowany podgląd do testów; integracja i dodanie do katalogu huba pozostają osobnym zleceniem.
+Osiem grywalnych wizyt w stałej kolejności, wszystkie reakcje z rozdziałów 5–13 GDD, trzy naruszenia, zakończenia „Koniec zmiany” i „Zmiana przerwana”, historia wyłącznie obsłużonych wizyt, restart, pauza, ustawienia i lokalny zapis. Wzorzec poprawnych decyzji: Wpuść, Odmów, Odmów, Wpuść, Odmów, Wpuść, Odmów, Odmów. Trzecia pomyłka kończy zmianę; 0–2 pomyłki po ósmej wizycie oznaczają przetrwanie. „Bez naruszeń” jest dopiskiem do wyniku 8/8, nie trzecim zakończeniem. Reguły i wersja tabeli scenariusza bez zmian.
 
-Prototyp obejmuje pierwsze dwie wizyty (Jan Wrona i Teresa Mazur), jedną proceduralną scenę Three.js, ograniczony obrót kamery, fikcyjną kartę mieszkańca i spis sześciu lokatorów. Zdjęcia powstają z tych samych modeli co goście. Kontrola nazwiska/mieszkania/twarzy, obejrzenie dokumentów w pierwszej wizycie, blokada decyzji w przejściach, widoczna liczba naruszeń, podsumowanie dwóch wizyt, restart z potwierdzeniem, pauza, lokalny checkpoint i domyślny fullscreen po świadomym starcie (z fallbackiem).
+Pełna prezentacja używa istniejących modeli i proceduralnych animacji/dźwięków: stuknięcia, kroki, śmiech, rura, klamka, domofon i oddech, bieg, klucz i skrzypienie drzwi. Polskie napisy przekazują kwestie i sygnały; nie ma nagrań lektorskich ani zewnętrznego TTS. Przy porażce scena 7,2 s obejmuje zgaszenie światła, powtórzenie wypowiedzi napisami/szumem, uchylenie drzwi, zarys twarzy i cięcie do czerni. Przetrwanie prowadzi do 06:00, ciepłego światła i kwestii zmiennika. Migotanie domyślnie wyłączone. Modele sześciu gości są ponownie wykorzystywane; brak nowych bibliotek, CDN, pobierania modeli lub wywołań AI w trakcie gry. Źródła samej gry: około 67 KB przed kompresją plus istniejący Three.js 0.170.0 (MIT).
 
-Wszystkie osiem wizyt jest zapisanych jako dane scenariusza. Publiczny prototyp ma limit **2**, nie udostępnia wizyt 3–8 ani końcowych scen całej gry. Logika pełnej wersji (3 pomyłki, 8 wizyt) ma testy, ale nie stanowi implementacji pełnej prezentacji. Zakończenie prototypu jest odrębne od przetrwania zmiany. Nie przewijamy czasu do 06:00 po dwóch wizytach.
+Zachowano zaakceptowany portretowy układ: scena, etapowy dialog i dane, ręczna karuzela sześciu identyfikatorów, stałe Odmów/Wpuść, „?” i pauza, wycentrowanie widoku. Rozglądanie nie jest wymagane do poprawnej decyzji. Pauza i ukrycie karty zamrażają także sekwencje wizyt i finał. Audio nie przekazuje żadnej wyłącznej wymaganej wskazówki.
 
-Decyzje wykonawcze: Three.js 0.170.0 z istniejącego `../magazyn-auto/vendor/three.module.js` (MIT); brak nowych zależności, importów CDN i modeli pobieranych w trakcie gry. Modele geometryczne i syntezowane dźwięki są materiałem prototypowym. Migotanie domyślnie wyłączone. Brak nagranych dialogów; wypowiedzi i sygnały mają polskie napisy. Nie zmieniono zasad GDD.
+## Uruchomienie i testowanie
 
-## Uruchomienie lokalne
+Kod: `apps/hub/public/games/nocna-portiernia/`. Z głównego katalogu repozytorium: `python -m http.server 8080 --directory apps/hub/public`, następnie `http://localhost:8080/games/nocna-portiernia/index.html`. Wymagane HTTP i WebGL, nie `file://`. Zachować sąsiedni `magazyn-auto/vendor/three.module.js` i `THREE-LICENSE.txt`. Nie jest potrzebny serwer API, konto gry ani konfiguracja sekretów. Testy: `node --test tests/nocna-portiernia*.test.mjs`.
 
-Z katalogu głównego repozytorium:
+Telefon: portret priorytetowy; przeciąganie sceny obraca kamerę, swipe kart przegląda wpisy. PC: przeciąganie myszą, Tab/Enter, strzałki/Home/End na karuzeli, Escape otwiera pauzę/zamyka instrukcję. Pełny ekran żądany w geście Nowa zmiana/Kontynuuj; odmowa daje całe okno bez blokady orientacji. Dłuższy dialog i część informacyjna mają własne przewijanie, decyzje pozostają poza nimi.
 
-```sh
-python -m http.server 8080 --directory apps/hub/public
-```
+## Checkpoint i zgodność z demem
 
-Otwórz `http://localhost:8080/games/nocna-portiernia/index.html`. Wymagany HTTP, nie `file://`. Alternatywnie gra jest zasobem statycznym lokalnego Next.js po `npm ci` i `npm run dev`; nie wymaga logowania, API ani konfiguracji środowiska.
+Pełny slot gościa: `pp:nocna-portiernia:guest:v1`, walidowany względem limitu 8. Zapis po odejściu i reakcji, terminalny wynik przed sceną zakończenia. Kontynuacja terminalnego zapisu otwiera wynik, nie powtarza ostatniej decyzji. Błąd zapisu jest widoczny i nie blokuje gry. Niedokończona wizyta po odświeżeniu wraca od początku.
 
-Do samodzielnego skopiowania prototypu zachowaj oba katalogi: `nocna-portiernia/` i `magazyn-auto/vendor/` wraz z licencją Three.js. Nie jest potrzebna pozostała gra MAGAZYN AUTO.
-
-Testy gry: `node --test tests/nocna-portiernia*.test.mjs`. Całe repozytorium: `npm test`.
-
-## Obsługa i zapis
-
-- Telefon: portret, przeciąganie sceny, dotykanie dokumentów/przycisków. Poziom opcjonalny. UI używa `100dvh`, safe-area i celów co najmniej 44 px.
-- PC: mysz oraz Tab/Enter do przycisków, Escape zamyka powiększenie/dokumenty i otwiera pauzę. Bez pointer lock.
-- Dotyk i mysz pozostają równocześnie aktywne; podpowiedź reaguje na faktyczne wejście. Resize anuluje gest, pozostawiając wybrany wpis i stan gry.
-- Utrata fokusu/widoczności pauzuje logikę przejść, scenę i audio. Powrót wymaga Wznów. Nie dodaje błędu.
-- Zapis wyłącznie lokalnego gościa, klucz `pp:nocna-portiernia:prototype-a:guest:v1`. Żadnego odczytu sesji huba. Walidacja obejmuje wersję scenariusza, limit prototypu, sekwencję decyzji, liczniki i zakończenie.
-- Checkpoint po reakcji i odejściu; opuszczenie karty przed zakończeniem przejścia odtwarza tę wizytę od początku. Zakończenie dwóch wizyt także jest zapisywane. Błąd zapisu pokazuje komunikat i nie blokuje sesji.
+Jeśli pełny slot nie istnieje, poprawny stary slot `pp:nocna-portiernia:prototype-a:guest:v1` jest kopiowany po walidacji do pełnej zmiany przez ponowne przeliczenie jego decyzji. Ukończone demo prowadzi do wizyty 3, nie do finału. Pierwotny slot dema pozostaje nienaruszony. Nowy zapis nie jest synchronizowany z kontem huba.
 
 ## Przekazanie programiście huba
 
-To niezintegrowany build standalone; uruchomienie wewnątrz iframe jest celowo blokowane komunikatem. Nie podłączaj obecnego buildu do produkcyjnego hosta MAGAZYN AUTO. Jego protokół akceptuje inny build, checkpoint `mission/cash` oraz inne komendy startu. Gra nie tworzy konkurencyjnego SDK.
+Gotowa pełna gra pozostaje samodzielnym buildem. Ta aktualizacja nie dodaje jej do katalogu i nie zmienia hosta, bazy ani infrastruktury. Tryb iframe nadal blokowany do czasu osobnego zlecenia integracji. Gra nie odczytuje tokenów, sesji ani konta huba; potrzebuje adaptera istniejącego protokołu, konfiguracji zatwierdzonego buildu, walidatora pełnego checkpointu i ewentualnego przycisku powrotu dostarczonego przez hosta. Chmura/biblioteka/katalog wymagają osobnej integracji. Brak rankingu, XP, reklam i dodatkowych walut.
 
-Po osobnym zleceniu integracji: zarejestrować zatwierdzony build i gameId `nocna-portiernia`, przygotować adapter do istniejącego hosta/MessagePort, walidator nowego checkpointu oraz kontrolowany odczyt/zapis właściwego gracza; dodać grę do dozwolonych identyfikatorów biblioteki/katalogu. Wprowadzić politykę iframe/CSP/CORS zgodną z rzeczywistym sposobem hostowania. W sandboxie zapis musi należeć do hosta, nie do `localStorage` dziecka. Wstrzymać powiadomienia huba w scenie. Powrót do huba ma być operacją hosta.
+## Weryfikacja pełnej wersji
 
-Kontekst konta nie jest jeszcze przyjmowany i nic nie jest zapisywane na koncie. Lokalny zapis prototypu nie jest automatycznie importowany do konta. Brak rankingu, XP, walut i nagród. Zapis chmurowy wymaga osobnego zakresu, implementacji i testów. Przed integracją rozbudować prezentację do pełnego etapu B albo świadomie oznaczyć build jako dwuwizytowe demo.
+36/36 testów Node: wszystkie 256 kombinacji decyzji, kontroler pełnej zmiany, oba zakończenia, 0/1/2 błędy, trzecie naruszenie również przy ósmej osobie, brak ujawniania przyszłych wizyt, przerwanie/pauza finału, terminalna kontynuacja i migracja dema. Testy prezentacji sprawdzają kolejność/czasy reakcji i pierwszeństwo błędów; dźwięki są badane z atrapami Web Audio, scena z atrapą renderera i rzeczywistą matematyką Three.js. To nie są testy słuchowe, GPU, WebGL ani screenshoty. Sprawdzono składnię zmienionych modułów.
+
+Zaakceptowany przez Patryka był wcześniejszy poprawiony UI. Nowe dźwięki, ruchy i finały wymagają odbioru na telefonie i PC. Zarządzany podgląd był niedostępny z powodu bwrap; nie ma nowego dowodu jego naprawienia. Nie wykonano tu pomiaru FPS ani nowego testu dotyku. Próba odbioru: nowa zmiana → osiem poprawnych odpowiedzi → Koniec zmiany; restart → trzy błędy → Zmiana przerwana; pauza w obu finałach, wyciszenie, brak migotania, obrót ekranu i odświeżenie zapisu.
+
+## Historia prototypu i wcześniejszych aktualizacji
+
+Poniższe wpisy opisują historyczne buildy; aktualny zakres i zapis znajdują się powyżej.
 
 ## Weryfikacja 16.10.2026
 

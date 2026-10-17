@@ -38,3 +38,13 @@ html,body{width:100%;height:100%;overflow:hidden}
 @media(max-height:620px) and (orientation:portrait){.dialogue{padding:5px 8px;min-height:48px}.paper{padding:5px 8px}.resident-card{padding-bottom:18px}}
 @media(max-height:480px) and (orientation:landscape){.gesture-hint{display:none}.portrait{width:52px;height:64px}.reading-area{padding-top:0}.decisions{padding-top:5px}.dialogue{padding:5px 8px}}
 @media(prefers-reduced-motion:reduce){.center-view{transition:none}}
+
+/* Story captions and end scenes reuse the tested portrait layout. */
+.atmosphere{position:absolute;left:10px;right:10px;bottom:20px;max-height:4.2em;overflow-y:auto;font-size:13px;line-height:1.4;color:#eff2df;text-align:center;background:#08120de6;border-radius:4px;padding:5px 8px;z-index:2;margin:0;pointer-events:none}
+.blackout{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:3;transition:opacity .35s ease}.blackout.visible{opacity:1}
+#game[data-ending=true] .resident-deck,#game[data-ending=true] #tutorial{visibility:hidden;pointer-events:none}
+.perfect{color:#e2edce!important;font-weight:700}
+@media(prefers-reduced-motion:reduce){.blackout{transition:none}}
+
+#mistakes{position:relative;padding-bottom:9px;--lamp1:#43513d;--lamp2:#43513d;--lamp3:#43513d}#mistakes::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:34px;height:7px;background:radial-gradient(circle at 4px 3.5px,var(--lamp1) 0 3px,transparent 3.5px),radial-gradient(circle at 17px 3.5px,var(--lamp2) 0 3px,transparent 3.5px),radial-gradient(circle at 30px 3.5px,var(--lamp3) 0 3px,transparent 3.5px)}
+#game[data-mistakes='1'] #mistakes,#game[data-mistakes='2'] #mistakes,#game[data-mistakes='3'] #mistakes{--lamp1:#f08368}#game[data-mistakes='2'] #mistakes,#game[data-mistakes='3'] #mistakes{--lamp2:#f08368}#game[data-mistakes='3'] #mistakes{--lamp3:#f08368}

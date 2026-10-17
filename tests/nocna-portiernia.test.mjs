@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialState, decide, validCheckpoint } from '../apps/hub/public/games/nocna-portiernia/logic.mjs';
+import { initialState, decide, validCheckpoint, upgradePrototypeCheckpoint } from '../apps/hub/public/games/nocna-portiernia/logic.mjs';
 import { visits, residents } from '../apps/hub/public/games/nocna-portiernia/scenario.mjs';
 
 test('GDD: exactly one discrepancy category in each invalid visit; valid residents match all fields',()=>{
@@ -46,4 +46,26 @@ test('restored checkpoints produce same next visit and terminal result; initial 
   const a=decide(initialState(),0,true),b=JSON.parse(JSON.stringify(a));
   assert.ok(validCheckpoint(b,2));assert.deepEqual(decide(a,1,false),decide(b,1,false));
   assert.equal(initialState().decisions.length,0);
+});
+
+
+test('every possible answer sequence ends at the third error or survives eight with at most two',()=>{
+  for(let mask=0;mask<256;mask++){
+    let state=initialState(8),errors=0,handled=0;
+    for(let i=0;i<8;i++){
+      const answer=Boolean(mask&(1<<i));errors+=Number(answer!==visits[i].allow);handled++;
+      state=decide(state,i,answer);assert.ok(validCheckpoint(state,8));if(errors===3)break;
+    }
+    assert.equal(state.nextVisitIndex,handled);assert.equal(state.mistakes,errors);
+    assert.equal(state.ending,errors===3?'failed':'survived');
+  }
+});
+test('demo migration validates the source, keeps its history and never treats demo completion as full completion',()=>{
+  for(const answers of [[true,false],[false,true],[]]){
+    let demo=initialState(2);for(let i=0;i<answers.length;i++)demo=decide(demo,i,answers[i]);
+    const before=JSON.stringify(demo),full=upgradePrototypeCheckpoint(demo);
+    assert.ok(validCheckpoint(full,8));assert.equal(full.ending,null);assert.deepEqual(full.decisions,demo.decisions);assert.equal(full.mistakes,demo.mistakes);assert.equal(JSON.stringify(demo),before);
+  }
+  assert.equal(upgradePrototypeCheckpoint({...initialState(2),mistakes:2}),null);
+  assert.equal(upgradePrototypeCheckpoint(initialState(8)),null);
 });

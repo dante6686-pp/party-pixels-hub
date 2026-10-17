@@ -2,19 +2,21 @@
 <html lang="pl">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#111c19"><title>Nocna portiernia — prototyp</title>
+  <meta name="theme-color" content="#111c19"><title>Nocna portiernia</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main id="game" data-ui-visible="false" data-dialogue-visible="false" data-info-visible="false" aria-label="Nocna portiernia">
     <header id="hud" class="hud" inert>
-      <div class="statusbar"><span><strong id="clock">03:00</strong> · <span id="visit">Wizyta 1/2</span></span><span id="mistakes">Błędy 0/3</span><button id="instructions" aria-label="Instrukcja">?</button><button id="pause" aria-label="Otwórz pauzę">Ⅱ</button></div>
+      <div class="statusbar"><span><strong id="clock">03:00</strong> · <span id="visit">Wizyta 1/8</span></span><span id="mistakes">Błędy 0/3</span><button id="instructions" aria-label="Instrukcja">?</button><button id="pause" aria-label="Otwórz pauzę">Ⅱ</button></div>
       <p id="save-status" role="status" hidden></p>
     </header>
     <section id="stage" class="stage" aria-label="Okienko portierni">
       <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
       <div class="vignette" aria-hidden="true"></div>
       <button id="center-view" class="center-view" aria-label="Wycentruj widok na gościu">Wycentruj widok</button>
+      <p id="atmosphere" class="atmosphere" role="status" hidden></p>
+      <div id="blackout" class="blackout" aria-hidden="true"></div>
       <p id="input-hint" class="gesture-hint">Przeciągnij widok, aby się rozejrzeć.</p>
     </section>
     <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
