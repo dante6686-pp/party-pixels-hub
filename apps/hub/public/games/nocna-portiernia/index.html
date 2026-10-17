@@ -14,18 +14,21 @@
     <section id="stage" class="stage" aria-label="Okienko portierni">
       <div id="scene" aria-label="Scena portierni 3D. Przeciągnij, aby się rozejrzeć."></div>
       <div class="vignette" aria-hidden="true"></div>
+      <button id="center-view" class="center-view" aria-label="Wycentruj widok na gościu">Wycentruj widok</button>
       <p id="input-hint" class="gesture-hint">Przeciągnij widok, aby się rozejrzeć.</p>
     </section>
-    <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy"></p><button id="dialog-expand" hidden>Cały dialog</button></section>
     <section id="controls" class="controls" aria-label="Stanowisko kontroli" hidden>
+      <div id="reading-area" class="reading-area" tabindex="0" aria-label="Wypowiedź, informacje i karty mieszkańców">
+        <section id="dialogue" class="dialogue" aria-live="polite"><p id="dialog-copy" tabindex="0" aria-label="Wypowiedź lub wydarzenie. Dłuższy tekst można przewinąć."></p></section>
       <section id="inspection" class="inspection" aria-label="Informacje gościa" hidden>
         <article id="card-sheet" class="paper"><h2>Podane informacje</h2><div id="card-content"></div></article>
       </section>
       <section class="resident-deck" aria-label="Karty mieszkańców">
-        <div class="deck-heading"><h2>Karty mieszkańców</h2><span>↔ Przesuwaj karty</span></div>
+        <div class="deck-heading"><h2>Karty mieszkańców</h2><span>↔ Przesuwaj · <output id="carousel-position" aria-label="Widoczna karta">1 / 6</output></span></div>
         <div id="resident-carousel" class="resident-carousel" tabindex="0" role="region" aria-label="Karty mieszkańców. Przesuwaj palcem, przeciągaj myszą lub użyj strzałek w lewo i w prawo."></div>
       </section>
       <p id="tutorial" class="hint" role="status">Porównaj podane informacje z wpisem w spisie i twarzą gościa.</p>
+      </div>
       <div class="decisions"><button id="deny" class="deny" disabled>Odmów</button><button id="allow" class="allow" disabled>Wpuść</button></div>
     </section>
     <section id="overlay" class="overlay" role="dialog" aria-modal="true" aria-label="Menu gry"><div class="panel" id="panel"></div></section>

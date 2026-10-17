@@ -9,7 +9,7 @@ import { requestDefaultFullscreen } from '../apps/hub/public/games/nocna-portier
 const base=new URL('../apps/hub/public/games/nocna-portiernia/',import.meta.url);
 
 function harness({brokenStorage=false,reducedMotion=false}={}){
-  const nodes=new Map(),events=new Map(),frames=[];let clock=0;const intersections=new Map();
+  const nodes=new Map(),events=new Map(),frames=[];let clock=0;const intersections=[];let cardStep=280,centers=0;
   class Element {
     constructor(id){this.id=id;this.hidden=false;this.disabled=false;this.textContent='';this.dataset={};this.html='';this.scrollLeft=0;this.clientWidth=300;this.scrollWidth=1800;this.scrollHeight=20;this.clientHeight=20;this.classList={toggle(){}};this.listeners=new Map();}
     set innerHTML(value){this.html=value;for(const m of value.matchAll(/id="([^"]+)"/g))nodes.set(m[1],new Element(m[1]));}
@@ -22,21 +22,22 @@ function harness({brokenStorage=false,reducedMotion=false}={}){
     contains(){return false;}
     scrollTo({left}){this.scrollLeft=left;}
     setPointerCapture(){}
+    get offsetLeft(){const i=residents.findIndex(r=>this.id==='resident-'+r.id);return Math.max(0,i)*cardStep;}
   }
-  const get=id=>{if(!nodes.has(id))nodes.set(id,new Element(id));return nodes.get(id);};
-  for(const m of readFileSync(new URL('index.html',base),'utf8').matchAll(/id="([^"]+)"/g))get(m[1]);
+  const get=id=>nodes.get(id)??null;
+  for(const m of readFileSync(new URL('index.html',base),'utf8').matchAll(/id="([^"]+)"/g))nodes.set(m[1],new Element(m[1]));
   get('inspection').hidden=true;get('fatal').hidden=true;
   const document={getElementById:get,querySelectorAll:()=>[],addEventListener:(name,fn)=>events.set(name,fn),hidden:false,activeElement:null};
   const window={addEventListener:(name,fn)=>events.set(name,fn),matchMedia:()=>({matches:reducedMotion,addEventListener:(name,fn)=>events.set('motion-preference',fn)})};window.parent=window;
   const storage=new Map();const pauses=[],swaySettings=[],reading=[];
-  const renderer={portraits:Object.fromEntries(residents.map(r=>[r.id,'data:image/png;base64,test'])),setSwayEnabled(value){swaySettings.push(value);},setReading(value){reading.push(value);},show(){},center(){},pause(value){pauses.push(value);},depart(){},flicker(){},rattle(){}};
+  const renderer={portraits:Object.fromEntries(residents.map(r=>[r.id,'data:image/png;base64,test'])),setSwayEnabled(value){swaySettings.push(value);},setReading(value){reading.push(value);},show(){},center(){centers++;},pause(value){pauses.push(value);},depart(){},flicker(){},rattle(){}};
   const context=vm.createContext({document,window,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>{if(brokenStorage)throw Error('QUOTA');storage.set(k,v);}},
     createScene:()=>renderer,createAudio:()=>({pause(){},resume(){},enabled(){},cue(){}}),residents,visits,PROTOTYPE_LIMIT,initialState,decide,validCheckpoint,requestDefaultFullscreen,structuredClone,console,
-    IntersectionObserver:class{constructor(fn,options){intersections.set(options.root.id,fn);}observe(){}unobserve(){}},requestAnimationFrame:fn=>frames.push(fn)});
+    IntersectionObserver:class{constructor(fn){intersections.push(fn);}observe(){}unobserve(){}},requestAnimationFrame:fn=>frames.push(fn)});
   vm.runInContext(readFileSync(new URL('main.mjs',base),'utf8').replace(/^import .+;$/gm,''),context);
   return {get,storage,events,pauses,swaySettings,reading,click(id){assert.equal(get(id).disabled,false,`${id} should be enabled`);get(id).onclick();},
-    visible(kind,ratio=1){intersections.get(kind==='card'?'inspection':'resident-carousel')([{target:get(kind==='card'?'card-content':'resident-jan'),isIntersecting:ratio>0,intersectionRatio:ratio}]);},
-    photo(){vm.runInContext('portrait("jan")',context);},state:()=>vm.runInContext('state',context),
+    visible(kind,ratio=1){intersections[kind==='card'?0:1]([{target:get(kind==='card'?'card-content':'resident-jan'),isIntersecting:ratio>0,intersectionRatio:ratio}]);},
+    centers:()=>centers,resizeCards(step){cardStep=step;events.get('resize')();},state:()=>vm.runInContext('state',context),
     advance(seconds){for(let i=0;i<seconds*60;i++){clock+=1000/60;const batch=frames.splice(0);for(const fn of batch)fn(clock);}}};
 }
 function start(h){h.click('new');h.click('begin');h.advance(3.6);assert.equal(h.get('allow').disabled,true);assert.equal(h.get('inspection').hidden,false);}
@@ -99,16 +100,34 @@ test('controller: six cards need no selection; first decision requires visible i
   assert.equal(JSON.parse([...h.storage.values()][0]).ending,'prototype');h.click('menu');h.click('continue');assert.match(h.get('panel').innerHTML,/Poprawne decyzje: 2\/2/);
 });
 test('controller: mouse and keyboard scroll; touch is native; modal blocks decisions; pause retains position',()=>{
-  const h=harness();start(h);inspectBoth(h);const c=h.get('resident-carousel'),emit=(name,e)=>c.listeners.get(name)(e);
+  const h=harness();start(h);inspectBoth(h);const c=h.get('resident-carousel'),emit=(name,e)=>c.listeners.get(name)({stopPropagation(){},...e});
   emit('pointerdown',{pointerType:'touch',button:0,pointerId:1,clientX:250});emit('pointermove',{pointerId:1,clientX:20});assert.equal(c.scrollLeft,0);
   emit('pointerdown',{pointerType:'mouse',button:0,pointerId:2,clientX:250});emit('pointermove',{pointerId:2,clientX:50});assert.equal(c.scrollLeft,200);emit('pointerup',{});
-  emit('pointermove',{pointerId:2,clientX:0});assert.equal(c.scrollLeft,200);
-  emit('keydown',{key:'ArrowRight',preventDefault(){}});assert.equal(c.scrollLeft,464);
+  emit('pointermove',{pointerId:2,clientX:0});assert.equal(c.scrollLeft,280);
+  emit('keydown',{key:'ArrowRight',preventDefault(){}});assert.equal(c.scrollLeft,560);
   h.click('instructions');assert.equal(h.get('allow').disabled,true);h.get('allow').onclick();assert.equal(h.state().nextVisitIndex,0);
-  h.click('back-rules');h.events.get('resize')();h.advance(.1);assert.equal(c.scrollLeft,464);
-  h.events.get('keydown')({key:'Escape',preventDefault(){}});assert.match(h.get('panel').innerHTML,/Chwila ciszy/);h.click('resume');assert.equal(c.scrollLeft,464);
+  h.click('back-rules');h.events.get('resize')();h.advance(.1);assert.equal(c.scrollLeft,560);
+  h.events.get('keydown')({key:'Escape',preventDefault(){}});assert.match(h.get('panel').innerHTML,/Chwila ciszy/);h.click('resume');assert.equal(c.scrollLeft,560);
 });
 test('controller: viewing a card behind a modal cannot unlock the first decision',()=>{
   const h=harness();start(h);h.visible('card');h.click('instructions');h.visible('register');h.click('back-rules');assert.equal(h.get('allow').disabled,true);
   h.visible('register');assert.equal(h.get('allow').disabled,false);
+});
+
+
+test('controller: counter follows manual swipe and resize retains the same resident; centering is independent',()=>{
+  const h=harness();start(h);const c=h.get('resident-carousel'),baseline=h.centers();
+  c.scrollLeft=840;c.listeners.get('scroll')();assert.equal(h.get('carousel-position').textContent,'4 / 6');
+  h.resizeCards(350);h.advance(.1);assert.equal(c.scrollLeft,1050);assert.equal(h.get('carousel-position').textContent,'4 / 6');
+  assert.equal(h.centers(),baseline);h.click('center-view');assert.equal(h.centers(),baseline+1);
+  assert.equal(c.scrollLeft,1050);assert.equal(h.state().nextVisitIndex,0);
+  h.click('pause');h.click('resume');assert.equal(c.scrollLeft,1050);
+});
+
+test('controller: keyboard ends at the first/last full card and cannot leave the deck',()=>{
+  const h=harness();start(h);const c=h.get('resident-carousel');
+  const key=k=>c.listeners.get('keydown')({key:k,preventDefault(){},stopPropagation(){}});
+  key('End');assert.equal(c.scrollLeft,1400);assert.equal(h.get('carousel-position').textContent,'6 / 6');
+  key('ArrowRight');assert.equal(c.scrollLeft,1400);key('Home');key('ArrowLeft');assert.equal(c.scrollLeft,0);
+  assert.equal(h.get('carousel-position').textContent,'1 / 6');assert.equal(h.state().nextVisitIndex,0);
 });

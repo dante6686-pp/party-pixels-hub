@@ -4,7 +4,7 @@ import * as THREE from '../apps/hub/public/games/magazyn-auto/vendor/three.modul
 import { cameraFrame,makePerson } from '../apps/hub/public/games/nocna-portiernia/scene.mjs';
 import { residents } from '../apps/hub/public/games/nocna-portiernia/scenario.mjs';
 // Projection geometry only: these scene regions approximate the responsive page, not browser screenshots.
-const frames=[[360,180,true],[390,300,true],[412,340,true],[480,230,false],[847,650,false]];
+const frames=[[360,112,true],[390,112,true],[412,112,true],[360,180,true],[390,300,true],[412,340,true],[480,230,false],[847,650,false]];
 test('default camera keeps all six heads and hairstyles inside the scene at mobile/desktop region sizes',()=>{
   for(const [w,h,portrait] of frames){
     const f=cameraFrame(w,h,portrait),camera=new THREE.PerspectiveCamera(f.fov,w/h,.08,25);
