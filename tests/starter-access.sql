@@ -1,0 +1,36 @@
+begin;
+do $$declare h uuid:=gen_random_uuid();g uuid:=gen_random_uuid();sid uuid;rid uuid:=gen_random_uuid();snap jsonb;t text;i int;rev bigint;admin_id uuid;begin
+ insert into auth.users(id,email,email_confirmed_at)values(h,h::text||'@example.invalid',now()),(g,g::text||'@example.invalid',now());
+ insert into public.profiles(player_id,handle,display_name)values(h,'qa_'||left(replace(h::text,'-',''),12),'Starter QA'),(g,'qa_'||left(replace(g::text,'-',''),12),'Guest QA');
+ perform set_config('request.jwt.claim.sub',h::text,true);
+ snap:=public.pp_starter();if snap->>'points'<>'0'then raise exception'INITIAL_POINTS';end if;
+ begin perform public.pp_starter('claim_task','round');raise exception'UNEARNED_TASK';exception when others then if sqlerrm<>'TASK_LOCKED'then raise;end if;end;
+ begin perform public.pp_starter('equip','frame',true);raise exception'UNEARNED_COSMETIC';exception when others then if sqlerrm<>'REWARD_LOCKED'then raise;end if;end;
+ begin perform public.pp_starter('pin',p_pinned=>'["event"]');raise exception'UNEARNED_BADGE';exception when others then if sqlerrm<>'BADGE_LOCKED'then raise;end if;end;
+ for i in 0..2 loop
+  insert into pp_private.game_sessions(player_id,game_id,challenge,started_at)values(h,'quick-math','[]',now()-make_interval(days=>i))returning id into sid;
+  insert into pp_private.score_submissions(session_id,player_id,request_id,payload,receipt)values(sid,h,gen_random_uuid(),'{}',jsonb_build_object('gameId','quick-math','verificationStatus','validated','value',5));
+ end loop;
+ insert into pp_private.game_sessions(player_id,game_id,challenge)values(h,'two-seconds','{}')returning id into sid;
+ insert into pp_private.score_submissions(session_id,player_id,request_id,payload,receipt)values(sid,h,gen_random_uuid(),'{}','{"gameId":"two-seconds","verificationStatus":"unverified","value":100}');
+ insert into pp_private.duels(id,host,guest,state,round)values(rid,h,g,'playing',2);
+ update pp_private.duels set state='finished',reason='completed',host_score=5,guest_score=4 where id=rid;
+ snap:=public.pp_starter();if snap->>'points'<>'100'or snap->>'pixels'<>'0'then raise exception'PROGRESS_CALC';end if;
+ for t in select unnest(array['round','perfect','timing','duel','rematch','days'])loop perform public.pp_starter('claim_task',t);end loop;
+ perform public.pp_starter('claim_task','round');snap:=public.pp_starter();if snap->>'pixels'<>'120'or snap->>'xp'<>'1000'then raise exception'DUPLICATE_CURRENCY';end if;
+ for t in select unnest(array['welcome','frame','banner','finish'])loop perform public.pp_starter('claim_reward',t);end loop;
+ perform public.pp_starter('equip','frame',true);perform public.pp_starter('equip','banner',true);perform public.pp_starter('equip','title',true);
+ perform public.pp_starter('pin',p_pinned=>'["level10","starter"]');snap:=public.pp_progress_public(h);
+ if snap->>'level'<>'11'or snap->>'frame'<>'true'or not(snap->'badges'?'starter')then raise exception'PROFILE_REWARDS';end if;
+ begin perform public.pp_award_profile_badge((select handle from public.profiles where player_id=h),'secret','QA secret');raise exception'NONADMIN_AWARD';exception when others then if sqlerrm<>'EDITOR_REQUIRED'then raise;end if;end;
+ if public.pp_progress_public(h)?'pixels'then raise exception'WALLET_LEAK';end if;
+ insert into pp_private.player_settings(player_id,show_badges)values(h,false)on conflict(player_id)do update set show_badges=false;
+ perform set_config('request.jwt.claim.sub',g::text,true);snap:=public.pp_progress_public(h);if snap->'level'<>'null'::jsonb or snap->'badges'<>'[]'::jsonb then raise exception'PRIVACY_LEAK';end if;
+ select player_id into admin_id from pp_private.style_editors limit 1;perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ perform public.pp_award_profile_badge((select handle from public.profiles where player_id=h),'secret','QA secret');
+ select revision into rev from public.hub_brand;snap:=public.pp_brand('valentine',rev);if snap->>'variant'<>'valentine'then raise exception'BRAND_FAILED';end if;
+ begin perform public.pp_brand('base',rev);raise exception'BRAND_STALE';exception when others then if sqlerrm<>'REVISION_CONFLICT'then raise;end if;end;
+end $$;
+set local role anon;
+do $$begin begin perform public.pp_starter();raise exception'ANON_STARTER';exception when insufficient_privilege then null;end;begin perform public.pp_brand('base',0);raise exception'ANON_BRAND';exception when insufficient_privilege then null;end;end $$;
+rollback;

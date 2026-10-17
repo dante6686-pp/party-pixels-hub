@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {getClient,type Profile} from '../../../lib/client';
+import BrandMark from '../../brand-mark';
 import ProfileCard from '../../profile-card';
 import ProfileActions from '../../profile-actions';
 export default function PublicProfile({handle}:{handle:string}){
@@ -20,7 +21,7 @@ export default function PublicProfile({handle}:{handle:string}){
   }
   void load();return()=>{alive=false;clearTimeout(timer);controller.abort();};
  },[handle,attempt]);
- return <main className="hub public-player-page"><header className="public-page-header"><a className="brand" href="/#games"><span className="brand-icon">✳</span>party<span>pixels</span></a><a href="/#friends" className="public-back">← Wróć do huba</a></header><div className="public-page-content">
+ return <main className="hub public-player-page"><header className="public-page-header"><a className="brand" href="/#games"><BrandMark/>party<span>pixels</span></a><a href="/#friends" className="public-back">← Wróć do huba</a></header><div className="public-page-content">
  {loading?<p role="status" className="muted">Wczytuję profil gracza…</p>:profile?<><ProfileCard profile={profile}/><ProfileActions key={profile.player_id} peer={profile}/></>:<section className="social-gate"><h1>Profil gracza</h1><p role="status">{error}</p><button className="profile-edit" onClick={()=>setAttempt(a=>a+1)}>Spróbuj ponownie</button></section>}
  <p className="public-privacy-note">Profil gracza · Party Pixels</p></div></main>;
 }

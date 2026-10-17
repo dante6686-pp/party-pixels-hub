@@ -11,6 +11,8 @@ import PlayerLibrary from './player-library';
 import PlayAgain from './play-again';
 import Friends from './friends';
 import ProfileCard,{banners} from './profile-card';
+import BrandMark from './brand-mark';
+import {StarterShortcut} from './starter/starter';
 
 type View = 'games'|'library'|'friends'|'messages'|'profile';
 const views:View[]=['games','library','friends','messages','profile'];
@@ -153,14 +155,14 @@ export default function Home() {
   return <main className="hub">
     <a href="#hub-content" className="skip-link">Przejdź do treści</a>
     <aside className="hub-sidebar">
-      <a className="brand" href="#games" aria-label="Party Pixels — gry"><span className="brand-icon">✳</span>party<span>pixels</span></a>
+      <a className="brand" href="#games" aria-label="Party Pixels — gry"><BrandMark/>party<span>pixels</span></a>
       <p className="sidebar-label">TWOJE MIEJSCE DO GRANIA</p>
       <nav className="hub-nav" aria-label="Nawigacja główna">{views.map((v,i)=><a href={'#'+v} key={v} aria-current={view===v?'page':undefined}><span className="nav-icon" aria-hidden="true">{['◈','▥','♧','▤','☺'][i]}</span><span>{viewNames[v]}</span>{((v==='friends'?invites:v==='messages'?unread:0)>0)&&<b className="nav-badge" aria-label={v==='friends'?'Nowe zaproszenia':'Rozmowy z nowymi wiadomościami'}>{v==='friends'?invites:unread}</b>}</a>)}</nav>
       <div className="sidebar-bottom"><span className="dot"/> WCZESNY DOSTĘP<p>Małe gry.<br/>Wielkie emocje.</p></div>
     </aside>
-    <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games">✳ party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><div className="hub-account-tools">{ready&&<Notifications key={user.id} owner={user.id} invites={invites} unread={unread}/>}<a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></div></header>
+    <div className="hub-workspace"><header className="hub-header"><a className="mobile-brand" href="#games"><BrandMark/> party<span>pixels</span></a><span className="breadcrumb">PARTY PIXELS <span>/ {viewNames[view]}</span></span><div className="hub-account-tools">{ready&&<Notifications key={user.id} owner={user.id} invites={invites} unread={unread}/>}<a className="user-chip" href="#profile"><span aria-hidden="true">{ready?avatars[profile.avatar_key]:'👋'}</span><span>{ready?profile.display_name:'Zaloguj się'}<small>{ready?'Twój kącik gracza':'Dołącz do ekipy'}</small></span></a></div></header>
     <div id="hub-content" className="hub-content">
-    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'W co dziś gramy?'}</h1><p>Graj bez konta. Z kontem masz ulubione, znajomych i wyniki w obsługiwanych grach.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section>{ready&&<PlayAgain key={user.id} owner={user.id} active={view==='games'}/>}<WhatsNewCarousel/><GameLibrary owner={ready?user.id:undefined}/>{!ready&&<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
+    <div hidden={view!=='games'}><section className="hub-welcome"><div><p className="eyebrow">DOBRZE, ŻE JESTEŚ</p><h1>{ready?'Hej, '+profile.display_name+'.':'W co dziś gramy?'}</h1><p>Graj bez konta. Z kontem masz ulubione, znajomych i wyniki w obsługiwanych grach.</p></div><div className="welcome-art" aria-hidden="true"><span>✳</span><i>PRESS PLAY<br/>MAKE MEMORIES</i></div></section>{ready&&<PlayAgain key={user.id} owner={user.id} active={view==='games'}/>}{ready&&<StarterShortcut key={user.id} owner={user.id}/>}<WhatsNewCarousel/><GameLibrary owner={ready?user.id:undefined}/>{!ready&&<div className="join-banner"><span>Twoje wyniki. Twoi znajomi. Jeden profil.</span><a href="#profile">Dołącz do Party Pixels ↗</a></div>}</div>
     <div hidden={view!=='profile'} className={"profile-view"+(ready&&!editing?" profile-preview-view":"")}><div className="view-heading"><p className="eyebrow">PO TWOJEMU</p><h1>Twój kącik gracza.</h1><p className="muted">Jeden profil na telefonie i komputerze. Wybierz swój nick i daj się poznać.</p></div><div className="columns">
     <section className={"account"+(ready&&!editing?" account-preview":"")} aria-label="Konto gracza"><div className="card-top"><span>TWÓJ KĄCIK GRACZA</span><span>↗</span></div>
       {!configured ? <div className="setup"><h2>Jeszcze chwila.</h2><p>Ta wersja czeka na podłączenie kont graczy. Wróć po zakończeniu konfiguracji.</p></div> : loading||profileLoading ? <p role="status">Wczytuję profil…</p> : profileError ? <div><p role="status">Nie udało się wczytać Twojego profilu.</p><button className="profile-edit" onClick={()=>window.location.reload()}>Spróbuj ponownie</button></div> : user && mode !== 'password' ? <>
